@@ -136,6 +136,8 @@ class GridRenderer {
   }
 }
 
+const SIZE = 3;
+
 class WorldRenderer3d {
   constructor(container) {
     this.container = container;
@@ -145,8 +147,8 @@ class WorldRenderer3d {
     const { width, height } = this.container.getBoundingClientRect();
     this.scene = new THREE.Scene();
     
-    var aspect = width / height;
-    var d = 20;
+    const aspect = width / height;
+    const d = 20;
     this.camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000  );
     this.camera.position.set( 20, 20, 20 );
     this.camera.lookAt( this.scene.position );
@@ -159,29 +161,52 @@ class WorldRenderer3d {
   }
 
   addLighting() {
-    this.scene.add( new THREE.AmbientLight( 0xffffff ) );
+    // this.scene.add( new THREE.AmbientLight( 0xffffff, 1) );
 
-    var light = new THREE.PointLight( 0xffffff, 0.8 );
-    light.position.set( 0, 50, 50 );
-    this.scene.add( light );
+    const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+    this.scene.add( hemisphere );
+
+    const sun = new THREE.PointLight( 0xffffff, 0.8 );
+    sun.position.set( 0, 50, 50 );
+    this.scene.add( sun );
   }
   
   createMap() {
-    var geometry = new THREE.PlaneGeometry( 36, 36, 32 );
-    var material = new THREE.MeshStandardMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
-    var plane = new THREE.Mesh( geometry, material );
+    const geometry = new THREE.PlaneGeometry( 12 * SIZE, 12 * SIZE, 32 );
+    const material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+    const plane = new THREE.Mesh( geometry, material );
     plane.rotateX( - Math.PI / 2);
 
     this.scene.add( plane );
     this.scene.add( new THREE.AxisHelper( 40 ) );
   }
 
-  render() {
+  render(world) {
     this.createScene();
     this.addLighting();
     this.createMap();
+    this.createWalls(world);
 
     this.animate();
+  }
+
+  createWalls(world) {
+    // geometry
+    const geometry = new THREE.BoxGeometry( SIZE, SIZE, SIZE );
+
+    // material
+    const material = new THREE.MeshStandardMaterial();
+    material.color.setHex(0xffffff);
+
+    // mesh
+    const mesh = new THREE.Mesh( geometry, material );
+    this.scene.add( mesh );
+    mesh.position.y = SIZE / 2;
+
+    mesh.position.x = 0;
+    mesh.position.z = 0;
+    // create wall at 0 / 0
+
   }
   
   animate() {
