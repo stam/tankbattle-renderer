@@ -193,6 +193,8 @@ class WorldRenderer3d {
     const trees = data.staticObjects.filter(obj => obj.type === 'tree');
     this.createTrees(trees);
 
+    this.createLasers(data.lasers);
+
     this.animate();
   }
 
@@ -263,6 +265,35 @@ class WorldRenderer3d {
 
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
+  }
+
+  createLasers(lasers) {
+    const geometry = new THREE.BoxGeometry(3, 1, 1);
+
+    const material = new THREE.MeshNormalMaterial();
+    // material.color.setHex(0xFE69B4);
+
+    lasers.forEach(laser => {
+      const [xStart, yStart] = laser.startPos;
+      this.createObjectAtPosition(geometry, material, xStart, yStart, 1.5);
+      
+      const [xEnd, yEnd] = laser.endPos;
+      this.createObjectAtPosition(geometry, material, xEnd, yEnd, 1.5);
+
+      for (let yIntermediate = yStart; yIntermediate <= yEnd; yIntermediate++) {
+        this.createObjectAtPosition(geometry, material, 1, yIntermediate, 1.5);
+      }
+    });
+  }
+
+  createObjectAtPosition(geometry, material, x, y, height) {
+    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
+    const mesh = new THREE.Mesh( geometry, material);
+
+    mesh.position.y = height;
+    mesh.position.x = worldX;
+    mesh.position.z = worldZ;
+    this.scene.add( mesh );
   }
   
   animate() {
