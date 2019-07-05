@@ -185,10 +185,13 @@ class WorldRenderer3d {
     this.createScene();
     this.addLighting();
     this.createMap();
+    
+    const walls = data.staticObjects.filter(obj => obj.type === 'wall');
+    this.createWalls(walls);
+    this.createTanks(data.tanks);
 
-    this.createWalls(data);
-    // this.createTanks(data);
-    // this.createTrees(data);
+    const trees = data.staticObjects.filter(obj => obj.type === 'tree');
+    this.createTrees(trees);
 
     this.animate();
   }
@@ -196,20 +199,54 @@ class WorldRenderer3d {
   convertFromGridToWold(x, y) {
     // WIDTH 1 in grid size is SIZE in threejs.
     // Then the center is at the center of the map instead of 0,0
-    const worldX = (SIZE * x) - (SIZE * (0.5 * MAP_SIZE - 0.5));
-    const worldZ = (SIZE * (0.5 * MAP_SIZE - 0.5)) - (SIZE * y);
+    const worldX = (SIZE * y) - (SIZE * (0.5 * MAP_SIZE - 0.5));
+    const worldZ = (SIZE * (0.5 * MAP_SIZE - 0.5)) - (SIZE * x);
 
     return [worldX, worldZ];
   }
 
-  createWalls(world) {
-    world.staticObjects.filter(obj => obj.type === 'wall').map(wall => {
+  createWalls(walls) {
+    walls.forEach(wall => {
       this.createWall(wall.position[0], wall.position[1]);
     });
   }
 
-  createTanks() {
+  createTanks(tanks) {
+    const geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
 
+    const material = new THREE.MeshStandardMaterial();
+    material.color.setHex(0x1A560A);
+
+    tanks.map(tank => {
+      const [x, y] = tank.position;
+      const mesh = new THREE.Mesh( geometry, material );
+      this.scene.add( mesh );
+      mesh.position.y = 1;
+  
+      const [worldX, worldZ] = this.convertFromGridToWold(x, y);
+  
+      mesh.position.x = worldX;
+      mesh.position.z = worldZ;
+    });
+  }
+
+  createTrees(trees) {
+    const geometry = new THREE.BoxGeometry(1, 4, 1);
+
+    const material = new THREE.MeshStandardMaterial();
+    material.color.setHex(0x4E2D04);
+
+    trees.map(tree => {
+      const [x, y] = tree.position;
+      const mesh = new THREE.Mesh( geometry, material );
+      this.scene.add( mesh );
+      mesh.position.y = 2;
+  
+      const [worldX, worldZ] = this.convertFromGridToWold(x, y);
+  
+      mesh.position.x = worldX;
+      mesh.position.z = worldZ;
+    });
   }
 
   createWall(x, y) {
