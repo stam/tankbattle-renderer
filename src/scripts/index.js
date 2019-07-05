@@ -3,6 +3,7 @@ const TILE_TANK = 'tank';
 const TILE_TREE = 'tree';
 const TILE_WALL = 'wall';
 const TILE_SIZE = 50;
+const THREE = window.THREE;
 
 class World {
   parse(worldData) {
@@ -135,6 +136,24 @@ class GridRenderer {
   }
 }
 
+class WorldRenderer3d {
+  constructor(container) {
+    this.container = container;
+  }
+  createScene() {
+    const { width, height } = this.container.getBoundingClientRect();
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize( width, height );
+    this.container.appendChild( renderer.domElement );
+  }
+  
+  render() {
+    this.createScene();
+  }
+}
+
 class PlayerListRenderer {
   constructor(domTarget) {
     this.domTarget = domTarget;
@@ -163,7 +182,6 @@ class PlayerListRenderer {
 
     const life = document.createElement('p');
     life.classList.add('player-life');
-    z = sadflkj;
     const hearts = new Array(player.energy).fill('&#10084;');
     life.innerHTML = hearts.join('');
     element.appendChild(life);
@@ -173,12 +191,12 @@ class PlayerListRenderer {
 }
 
 function renderWorld(data) {
-  const gridRenderer = new GridRenderer(document.querySelector('.grid'));
+  const worldRenderer = new WorldRenderer3d(document.querySelector('.grid'));
   const playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
   const world = new World();
 
   world.parse(data);
-  gridRenderer.render(world);
+  worldRenderer.render(world);
   playerRenderer.render(world.players);
 }
 
