@@ -144,47 +144,36 @@ class WorldRenderer3d {
   createScene() {
     const { width, height } = this.container.getBoundingClientRect();
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+    
+    var aspect = width / height;
+    var d = 20;
+    this.camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000  );
+    this.camera.position.set( 20, 20, 20 );
+    this.camera.lookAt( this.scene.position );
+    
+    
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize( width, height );
+    this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
     this.container.appendChild( this.renderer.domElement );
   }
 
   addLighting() {
-    const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-    hemiLight.color.setHSL( 0.6, 1, 0.6 );
-    hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-    hemiLight.position.set( 0, 50, 0 );
-    this.scene.add( hemiLight );
-    const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
-    this.scene.add( hemiLightHelper );
+    this.scene.add( new THREE.AmbientLight( 0xffffff ) );
 
-    const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    dirLight.color.setHSL( 0.1, 1, 0.95 );
-    dirLight.position.set( - 1, 1.75, 1 );
-    dirLight.position.multiplyScalar( 30 );
-    this.scene.add( dirLight );
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    var d = 50;
-    dirLight.shadow.camera.left = - d;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = - d;
-    dirLight.shadow.camera.far = 3500;
-    dirLight.shadow.bias = - 0.0001;
-    const dirLightHeper = new THREE.DirectionalLightHelper( dirLight, 10 );
-    this.scene.add( dirLightHeper );
+    var light = new THREE.PointLight( 0xffffff, 0.8 );
+    light.position.set( 0, 50, 50 );
+    this.scene.add( light );
   }
   
   createMap() {
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshStandardMaterial( { color: 0x00ff00 } );
-    this.cube = new THREE.Mesh( geometry, material );
-    this.scene.add( this.cube );
-    this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
-    this.camera.position.z = 5;
+    var geometry = new THREE.PlaneGeometry( 36, 36, 32 );
+    var material = new THREE.MeshStandardMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+    var plane = new THREE.Mesh( geometry, material );
+    plane.rotateX( - Math.PI / 2);
+
+    this.scene.add( plane );
+    this.scene.add( new THREE.AxisHelper( 40 ) );
   }
 
   render() {
@@ -197,8 +186,6 @@ class WorldRenderer3d {
   
   animate() {
     this.controls.update();
-    // this.cube.rotation.x += 0.01;
-    // this.cube.rotation.y += 0.01;
     window.requestAnimationFrame(() => this.animate());
     this.renderer.render(this.scene, this.camera );
   }
