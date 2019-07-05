@@ -137,6 +137,7 @@ class GridRenderer {
 }
 
 const SIZE = 3;
+const MAP_SIZE = 12;
 
 class WorldRenderer3d {
   constructor(container) {
@@ -155,14 +156,13 @@ class WorldRenderer3d {
     
     
     this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setClearColor(0xFFFFFF, 1);
     this.renderer.setSize( width, height );
     this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
     this.container.appendChild( this.renderer.domElement );
   }
 
   addLighting() {
-    // this.scene.add( new THREE.AmbientLight( 0xffffff, 1) );
-
     const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
     this.scene.add( hemisphere );
 
@@ -172,7 +172,7 @@ class WorldRenderer3d {
   }
   
   createMap() {
-    const geometry = new THREE.PlaneGeometry( 12 * SIZE, 12 * SIZE, 32 );
+    const geometry = new THREE.PlaneGeometry( MAP_SIZE * SIZE, MAP_SIZE * SIZE, 32 );
     const material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, material );
     plane.rotateX( - Math.PI / 2);
@@ -181,32 +181,51 @@ class WorldRenderer3d {
     this.scene.add( new THREE.AxisHelper( 40 ) );
   }
 
-  render(world) {
+  render(data) {
     this.createScene();
     this.addLighting();
     this.createMap();
-    this.createWalls(world);
+
+    this.createWalls(data);
+    // this.createTanks(data);
+    // this.createTrees(data);
 
     this.animate();
   }
 
-  createWalls(world) {
-    // geometry
-    const geometry = new THREE.BoxGeometry( SIZE, SIZE, SIZE );
+  convertFromGridToWold(x, y) {
+    // WIDTH 1 in grid size is SIZE in threejs.
+    // Then the center is at the center of the map instead of 0,0
+    const worldX = (SIZE * x) - (SIZE * (0.5 * MAP_SIZE - 0.5));
+    const worldZ = (SIZE * (0.5 * MAP_SIZE - 0.5)) - (SIZE * y);
 
-    // material
+    return [worldX, worldZ];
+  }
+
+  createWalls(world) {
+    world.staticObjects.filter(obj => obj.type === 'wall').map(wall => {
+      this.createWall(wall.position[0], wall.position[1]);
+    });
+  }
+
+  createTanks() {
+
+  }
+
+  createWall(x, y) {
+    const geometry = new THREE.BoxGeometry( SIZE, 1, SIZE);
+
     const material = new THREE.MeshStandardMaterial();
     material.color.setHex(0xffffff);
 
-    // mesh
     const mesh = new THREE.Mesh( geometry, material );
     this.scene.add( mesh );
-    mesh.position.y = SIZE / 2;
+    mesh.position.y = 0.5;
 
-    mesh.position.x = 0;
-    mesh.position.z = 0;
-    // create wall at 0 / 0
+    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
 
+    mesh.position.x = worldX;
+    mesh.position.z = worldZ;
   }
   
   animate() {
@@ -258,7 +277,7 @@ function renderWorld(data) {
   const world = new World();
 
   world.parse(data);
-  worldRenderer.render(world);
+  worldRenderer.render(data);
   playerRenderer.render(world.players);
 }
 
