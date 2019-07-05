@@ -6,10 +6,7 @@ const TILE_SIZE = 50;
 
 class World {
   parse(worldData) {
-    this.grid = this.createGrid(
-      worldData.dimensions.width,
-      worldData.dimensions.width
-    );
+    this.grid = this.createGrid(worldData.dimensions.width, worldData.dimensions.width);
     this.players = [];
 
     this.addLasers(worldData.lasers);
@@ -19,10 +16,10 @@ class World {
 
   createGrid(width, height) {
     const grid = [];
-    for (let x=0; x < width; x++) {
+    for (let x = 0; x < width; x++) {
       const row = [];
 
-      for (let y=0; y < height; y++) {
+      for (let y = 0; y < height; y++) {
         row.push({
           type: TILE_EMPTY,
         });
@@ -33,22 +30,22 @@ class World {
   }
 
   addAssets(objects) {
-    objects.forEach((object) => {
+    objects.forEach(object => {
       const [x, y] = object.position;
 
       this.grid[x][y] = object;
-    })
+    });
   }
 
   addTanks(tanks) {
-    tanks.forEach((tank) => {
+    tanks.forEach(tank => {
       const [x, y] = tank.position;
 
       this.grid[x][y] = tank;
       this.grid[x][y].type = TILE_TANK;
 
       this.players.push(tank);
-    })
+    });
   }
 
   addLasers(laserData) {
@@ -69,14 +66,13 @@ class GridRenderer {
   }
 
   render(world) {
-    world.grid.forEach((column) => {
+    world.grid.forEach(column => {
       let element = document.createElement('div');
       element.setAttribute('class', 'column');
 
-      column.forEach((entity) => {
+      column.forEach(entity => {
         const tileElement = this.renderTile(entity);
         element.appendChild(tileElement);
-
       });
       this.domTarget.appendChild(element);
     });
@@ -93,7 +89,7 @@ class GridRenderer {
       case TILE_TANK:
         element.classList.add('tank');
         element.classList.add(entity.orientation);
-        element.setAttribute('style', `background-color: ${entity.color}`)
+        element.setAttribute('style', `background-color: ${entity.color}`);
         break;
       case TILE_TREE:
         element.classList.add('tree');
@@ -120,19 +116,22 @@ class GridRenderer {
       if (['north', 'south'].includes(laser.direction)) {
         // vertical
         width = TILE_SIZE;
-        height = ( Math.abs(endY - startY) + 1) * TILE_SIZE;
+        height = (Math.abs(endY - startY) + 1) * TILE_SIZE;
         top = Math.min(startY, endY);
-
       } else {
         // horizontal
         height = TILE_SIZE;
-        width = (Math.abs(endX - startX) +1 ) * TILE_SIZE;
+        width = (Math.abs(endX - startX) + 1) * TILE_SIZE;
         left = Math.min(startX, endX);
       }
 
-      element.setAttribute('style', `left: ${left * TILE_SIZE}px; top: ${top * TILE_SIZE}px; width: ${width}px; height: ${height}px;`);
+      element.setAttribute(
+        'style',
+        `left: ${left * TILE_SIZE}px; top: ${top *
+          TILE_SIZE}px; width: ${width}px; height: ${height}px;`,
+      );
       this.domTarget.append(element);
-    })
+    });
   }
 }
 
@@ -145,7 +144,7 @@ class PlayerListRenderer {
   render(players) {
     players.forEach(player => {
       this.renderPlayer(player);
-    })
+    });
   }
 
   renderPlayer(player) {
@@ -154,7 +153,7 @@ class PlayerListRenderer {
 
     const color = document.createElement('div');
     color.classList.add('color-indicator');
-    color.setAttribute('style', `background-color: ${player.color}`)
+    color.setAttribute('style', `background-color: ${player.color}`);
     element.appendChild(color);
 
     const name = document.createElement('p');
@@ -164,6 +163,7 @@ class PlayerListRenderer {
 
     const life = document.createElement('p');
     life.classList.add('player-life');
+    z = sadflkj;
     const hearts = new Array(player.energy).fill('&#10084;');
     life.innerHTML = hearts.join('');
     element.appendChild(life);
@@ -182,7 +182,6 @@ function renderWorld(data) {
   playerRenderer.render(world.players);
 }
 
-
 async function tick() {
   const response = await fetch('/world');
   const data = await response.json();
@@ -193,4 +192,6 @@ function startGameloop() {
   setInterval(tick, 100);
 }
 
-window.onload = startGameloop;
+window.onload = () => {
+  renderWorld(window._world);
+};
