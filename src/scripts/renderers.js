@@ -33,14 +33,12 @@ function getIntermediatePositions(startPosition, endPosition) {
 }
 
 class _WallRenderer {
-  constructor(scene, bus) {
-    this.scene = scene;
-    this.bus = bus;
-    this.bindHandlers();
+  constructor(threeRenderer) {
+    this.threeRenderer = threeRenderer;
   }
 
-  bindHandlers() {
-    this.bus.addEventListener('WALL_CREATE', this.createWall.bind(this));
+  bind(bus) {
+    bus.addEventListener('WALL_CREATE', this.createWall.bind(this));
   }
 
   createWall(wallCreatedEvent) {
@@ -52,14 +50,9 @@ class _WallRenderer {
     material.color.setHex(0xffffff);
 
     const mesh = new THREE.Mesh( geometry, material );
-    this.scene.add( mesh );
+    this.threeRenderer.addToScene(mesh);
+    this.threeRenderer.setPosition(mesh, x, y);
     mesh.position.y = 0.5;
-
-    const [worldX, worldZ] = window.convert(x, y);
-
-    mesh.position.x = worldX;
-    mesh.position.z = worldZ;
-    // console.log('HEEEEENK!');
   }
 }
 
@@ -72,9 +65,6 @@ class _ThreeRenderer {
     const { width, height } = worldData.dimensions;
     this.width = width;
     this.height = height;
-
-    // Fix this by passing this mapView to the renderers instead of just the scene
-    window.convert = this.convertFromGridToWold.bind(this);
 
     this.createScene();
     this.addLighting();
@@ -98,6 +88,17 @@ class _ThreeRenderer {
     this.renderer.setSize( width, height );
     this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
     this.container.appendChild( this.renderer.domElement );
+  }
+
+  addToScene(mesh) {
+    this.scene.add(mesh);
+  }
+
+  setPosition(mesh, x, y) {
+    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
+
+    mesh.position.x = worldX;
+    mesh.position.z = worldZ;
   }
 
   addLighting() {

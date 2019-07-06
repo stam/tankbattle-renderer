@@ -1,5 +1,6 @@
 const ThreeRenderer = window.ThreeRenderer;
 const PlayerListRenderer = window.PlayerListRenderer;
+const WallRenderer = window.WallRenderer;
 const WorldStateManager = window.WorldStateManager;
 
 class Controller {
@@ -13,8 +14,18 @@ class Controller {
   async initialize() {
     const data = await this.fetchWorld();
     this.threeRenderer.initialize(data);
-    this.worldStateManager.initialize(this.threeRenderer.scene, data);
-    this.updateViews(data);
+
+    this.wallRenderer = new WallRenderer(this.threeRenderer);
+    // this.tankRenderer = new TankRenderer(this.threeRenderer);
+
+    this.bindRenderers();
+    
+    this.worldStateManager.initialize(data);
+    this.playerRenderer.render(data.tanks);
+  }
+
+  bindRenderers() {
+    this.wallRenderer.bind(this.worldStateManager.bus);
   }
 
   async fetchWorld() {

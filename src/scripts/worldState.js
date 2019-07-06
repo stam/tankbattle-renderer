@@ -1,5 +1,3 @@
-const WallRenderer = window.WallRenderer;
-
 class _EventBus {
   constructor() {
     this.bus = document.createElement('_event-bus');
@@ -27,18 +25,17 @@ class _WorldStateManager {
   constructor() {
     this.bus = new _EventBus();
   }
-  
-  initialize(scene, initialWorld) {
-    this.wallRenderer = new WallRenderer(scene, this.bus);
 
+  initialize(initialWorld) {
     this.parseStatics(initialWorld);
   }
 
   parseStatics(initialWorld) {
-    const walls = initialWorld.staticObjects.filter(object => object.type === 'wall');
-    walls.forEach(wall => {
-      this.bus.dispatchEvent('WALL_CREATE', wall);
-    });
+    initialWorld.staticObjects
+      .filter(object => object.type === 'wall')
+      .map(wall => {
+        this.bus.dispatchEvent('WALL_CREATE', wall);
+      });
   }
 
   parse() {
