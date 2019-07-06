@@ -43,7 +43,13 @@ class _BaseRenderer {
   create(assetEvent) {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
-    const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, this.zPosition);
+    const mesh = this.threeRenderer.createObjectAtPosition(
+      this.geometry,
+      this.material,
+      x,
+      y,
+      this.zPosition,
+    );
     this.threeRenderer.addToScene(mesh);
 
     this.meshes[asset.id] = mesh;
@@ -69,8 +75,8 @@ class _LaserRenderer extends _BaseRenderer {
   constructor(...args) {
     super(...args);
 
-    this.zPosition = 1.5;
-    this.geometry = new THREE.BoxGeometry(3, 1, 1);
+    this.zPosition = 2;
+    this.geometry = new THREE.BoxGeometry(1.25, 0.5, 0.5);
     this.material = new THREE.MeshNormalMaterial();
   }
 
@@ -85,21 +91,39 @@ class _LaserRenderer extends _BaseRenderer {
     const group = new THREE.Group();
 
     const [xStart, yStart] = laser.startPos;
-    const startMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, xStart, yStart, 1.5);
+    const startMesh = this.threeRenderer.createObjectAtPosition(
+      this.geometry,
+      this.material,
+      xStart,
+      yStart,
+      this.zPosition,
+    );
     group.add(startMesh);
-    
+
     const [xEnd, yEnd] = laser.endPos;
-    const endMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, xEnd, yEnd, 1.5);
+    const endMesh = this.threeRenderer.createObjectAtPosition(
+      this.geometry,
+      this.material,
+      xEnd,
+      yEnd,
+      this.zPosition,
+    );
     group.add(endMesh);
-    
+
     const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
     intermediatePositions.forEach(position => {
-      const intermediateMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, position[0], position[1], 1.5);
+      const intermediateMesh = this.threeRenderer.createObjectAtPosition(
+        this.geometry,
+        this.material,
+        position[0],
+        position[1],
+        this.zPosition,
+      );
       group.add(intermediateMesh);
     });
 
     if (['east', 'west'].includes(laser.direction)) {
-      group.children.forEach((mesh) => {
+      group.children.forEach(mesh => {
         mesh.rotation.y = 0.5 * Math.PI;
       });
     }
@@ -126,15 +150,43 @@ class _TreeRenderer extends _BaseRenderer {
   }
 }
 
-
 class _TankRenderer extends _BaseRenderer {
   constructor(...args) {
     super(...args);
 
-    this.zPosition = 1;
-    this.geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
+    this.zPosition = 0.75;
     this.material = new THREE.MeshStandardMaterial();
+
+    this.hullGeometry = new THREE.BoxGeometry(2.5, 1.5, 2);
+    this.turretGeometry = new THREE.BoxGeometry(1.5, 1, 1.5);
+    this.barrelGeometry = new THREE.BoxGeometry(2.5, 0.5, 0.5);
     this.material.color.setHex(0x1a560a);
+  }
+
+  create(assetEvent) {
+    const { detail: asset } = assetEvent;
+    const [x, y] = asset.position;
+
+    const group = new THREE.Group();
+
+    const hull = new THREE.Mesh(this.hullGeometry, this.material);
+    hull.position.y = 0.75;
+    group.add(hull);
+
+    const turret = new THREE.Mesh(this.turretGeometry, this.material);
+    turret.position.y = 1.5 + 0.5;
+    group.add(turret);
+
+    const barrel = new THREE.Mesh(this.barrelGeometry, this.material);
+    barrel.position.y = 1.5 + 0.5;
+    barrel.position.x = -1.25;
+    group.add(barrel);
+
+    this.threeRenderer.setPosition(group, x, y);
+    this.threeRenderer.setRotation(group, asset.orientation);
+    this.threeRenderer.addToScene(group);
+
+    this.meshes[asset.id] = group;
   }
 
   bind(bus) {
@@ -205,6 +257,24 @@ class _ThreeRenderer {
 
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
+  }
+
+  setRotation(mesh, orientation) {
+    switch (orientation) {
+      case 'north':
+        return;
+      case 'east':
+        mesh.rotation.y = -0.5 * Math.PI;
+        return;
+      case 'south':
+        mesh.rotation.y = Math.PI;
+        return;
+      case 'west':
+        mesh.rotation.y = 0.5 * Math.PI;
+        return;
+      default:
+        throw new Error(`Unsupported orentation found: ${orientation}`)
+    }
   }
 
   addLighting() {
