@@ -24,6 +24,12 @@ class _EventBus {
 class _WorldStateManager {
   constructor() {
     this.bus = new _EventBus();
+    
+    this.walls = {};
+    this.trees = {};
+    this.tanks = {};
+    this.lasers = {};
+    this.explosions = {};
   }
 
   initialize(initialWorld) {
@@ -34,6 +40,7 @@ class _WorldStateManager {
     initialWorld.staticObjects
       .filter(object => object.type === 'wall')
       .map(wall => {
+        this.walls[wall.id] = wall;
         this.bus.dispatchEvent('WALL_CREATE', wall);
       });
   }
