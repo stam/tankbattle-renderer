@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cp -r src ../resources/public"
+    "build": "rm -rf ../resources/public && cp -r src ../resources/public"
   },
   "author": "",
   "license": "ISC",
