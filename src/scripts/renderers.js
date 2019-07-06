@@ -35,18 +35,46 @@ function getIntermediatePositions(startPosition, endPosition) {
 class _TankRenderer {
   constructor(threeRenderer) {
     this.threeRenderer = threeRenderer;
+
+    this.meshes = {};
+
+    this.geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
+    this.material = new THREE.MeshStandardMaterial();
+    this.material.color.setHex(0x1A560A);
   }
 
   bind(bus) {
-    bus.addEventListener('TANK_CREATE', () => {
-      console.log('create tank');
-    });
-    bus.addEventListener('TANK_UPDATE', () => {
-      console.log('update tank');
-    });
-    bus.addEventListener('TANK_DELETE', (e) => {
-      console.log('delete tank', e.detail.id);
-    });
+    bus.addEventListener('TANK_CREATE', this.createTank.bind(this));
+    bus.addEventListener('TANK_UPDATE', this.updateTank.bind(this));
+    bus.addEventListener('TANK_DELETE', this.deleteTank.bind(this));
+  }
+
+  createTank(tankEvent) {
+    const { detail: tank } = tankEvent;
+
+    const [x, y] = tank.position;
+    const mesh = new THREE.Mesh(this.geometry, this.material);
+    mesh.position.y = 1;
+
+    this.threeRenderer.addToScene(mesh);
+    this.threeRenderer.setPosition(mesh, x, y);
+
+    this.meshes[tank.id] = mesh;
+  }
+  
+  updateTank(tankEvent) {
+    const { detail: tank } = tankEvent;
+    const [x, y] = tank.position;
+    const mesh = this.meshes[tank.id];
+    this.threeRenderer.setPosition(mesh, x, y);
+  }
+  
+  deleteTank(tankEvent) {
+    const { detail: tank } = tankEvent;
+
+    const mesh = this.meshes[tank.id];
+    this.threeRenderer.removeFromScene(mesh);
+    delete this.meshes[tank.id];
   }
 }
 
@@ -112,6 +140,10 @@ class _ThreeRenderer {
     this.scene.add(mesh);
   }
 
+  removeFromScene(mesh) {
+    this.scene.remove(mesh);
+  }
+
   setPosition(mesh, x, y) {
     const [worldX, worldZ] = this.convertFromGridToWold(x, y);
 
@@ -138,23 +170,6 @@ class _ThreeRenderer {
     this.scene.add( new THREE.AxisHelper( 40 ) );
   }
 
-  render(data) {
-    this.createScene();
-    this.addLighting();
-    this.createMap();
-    
-    const walls = data.staticObjects.filter(obj => obj.type === 'wall');
-    this.createWalls(walls);
-    this.createTanks(data.tanks);
-
-    const trees = data.staticObjects.filter(obj => obj.type === 'tree');
-    this.createTrees(trees);
-
-    this.createLasers(data.lasers);
-
-    this.animate();
-  }
-
   convertFromGridToWold(x, y) {
     // WIDTH 1 in grid size is SIZE in threejs.
     // Then the center is at the center of the map instead of 0,0
@@ -162,31 +177,6 @@ class _ThreeRenderer {
     const worldZ = (SIZE * (0.5 * this.height - 0.5)) - (SIZE * x);
 
     return [worldX, worldZ];
-  }
-
-  createWalls(walls) {
-    walls.forEach(wall => {
-      this.createWall(wall.position[0], wall.position[1]);
-    });
-  }
-
-  createTanks(tanks) {
-    const geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
-
-    const material = new THREE.MeshStandardMaterial();
-    material.color.setHex(0x1A560A);
-
-    tanks.map(tank => {
-      const [x, y] = tank.position;
-      const mesh = new THREE.Mesh( geometry, material );
-      this.scene.add( mesh );
-      mesh.position.y = 1;
-  
-      const [worldX, worldZ] = this.convertFromGridToWold(x, y);
-  
-      mesh.position.x = worldX;
-      mesh.position.z = worldZ;
-    });
   }
 
   createTrees(trees) {
@@ -206,22 +196,6 @@ class _ThreeRenderer {
       mesh.position.x = worldX;
       mesh.position.z = worldZ;
     });
-  }
-
-  createWall(x, y) {
-    const geometry = new THREE.BoxGeometry( SIZE, 1, SIZE);
-
-    const material = new THREE.MeshStandardMaterial();
-    material.color.setHex(0xffffff);
-
-    const mesh = new THREE.Mesh( geometry, material );
-    this.scene.add( mesh );
-    mesh.position.y = 0.5;
-
-    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
-
-    mesh.position.x = worldX;
-    mesh.position.z = worldZ;
   }
 
   createLasers(lasers) {
@@ -253,6 +227,8 @@ class _ThreeRenderer {
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
     this.scene.add( mesh );
+
+    return mesh;
   }
   
   animate() {

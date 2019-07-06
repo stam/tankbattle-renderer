@@ -11,7 +11,7 @@ class Controller {
     this.worldStateManager = new WorldStateManager();
     this._interval = setInterval(() => this.tick(), 1000);
   }
-  
+
   async initialize() {
     const data = await this.fetchWorld();
     this.threeRenderer.initialize(data);
@@ -20,18 +20,41 @@ class Controller {
     this.tankRenderer = new TankRenderer(this.threeRenderer);
 
     this.bindRenderers();
-    
+
     this.worldStateManager.initialize(data);
     this.updateViews(data);
     this.test(data);
   }
 
   test(data) {
-    const newData = JSON.parse(JSON.stringify(data));
+    const updateData = JSON.parse(JSON.stringify(data));
+    const deleteData = JSON.parse(JSON.stringify(data));
 
-    this.updateViews(newData);
-    newData.tanks = [];
-    this.updateViews(newData);
+    setTimeout(() => {
+      updateData.tanks[0].position = [10, 6];
+      this.updateViews(updateData);
+    }, 1000);
+
+    setTimeout(() => {
+      updateData.tanks[0].position = [9, 6];
+      this.updateViews(updateData);
+    }, 2000);
+
+    setTimeout(() => {
+      updateData.tanks[0].position = [8, 6];
+      this.updateViews(updateData);
+    }, 3000);
+
+    setTimeout(() => {
+      updateData.tanks[0].position = [8, 7];
+      this.updateViews(updateData);
+    }, 4000);
+
+    
+    setTimeout(() => {
+      deleteData.tanks = [];
+      this.updateViews(deleteData);
+    }, 5000);
   }
 
   bindRenderers() {
