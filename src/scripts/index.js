@@ -27,7 +27,6 @@ class Controller {
 
     this.worldStateManager.initialize(data);
     this.updateViews(data);
-    // this.test(data);
   }
 
   bindRenderers() {
@@ -37,48 +36,16 @@ class Controller {
     this.tankRenderer.bind(this.worldStateManager.bus);
   }
 
-  test(data) {
-    const updateData = JSON.parse(JSON.stringify(data));
-    const deleteData = JSON.parse(JSON.stringify(data));
-
-    setTimeout(() => {
-      updateData.tanks[0].position = [10, 6];
-      this.updateViews(updateData);
-    }, 1000);
-
-    setTimeout(() => {
-      updateData.tanks[0].position = [9, 6];
-      this.updateViews(updateData);
-    }, 2000);
-
-    setTimeout(() => {
-      updateData.tanks[0].position = [8, 6];
-      this.updateViews(updateData);
-    }, 3000);
-
-    setTimeout(() => {
-      updateData.tanks[0].position = [8, 7];
-      this.updateViews(updateData);
-    }, 4000);
-
-    
-    setTimeout(() => {
-      deleteData.tanks = [];
-      this.updateViews(deleteData);
-    }, 5000);
-  }
 
   async fetchWorld() {
-    // const response = await fetch('http://localhost:3000/world');
-    // const data = await response.json();
-    // return data;
-
-    return window._world;
+    const response = await fetch('/world');
+    const data = await response.json();
+    return data;
   }
 
   async tick() {
     const data = await this.fetchWorld();
-    // this.updateViews(data);
+    this.updateViews(data);
   }
 
   async updateViews(data) {
