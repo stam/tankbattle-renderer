@@ -1,5 +1,4 @@
 const SIZE = 3;
-const MAP_SIZE = 12;
 const THREE = window.THREE;
 
 
@@ -41,11 +40,26 @@ class _WallRenderer {
   }
 
   bindHandlers() {
-    this.bus.addEventListener('henk', this.callHenk.bind(this));
+    this.bus.addEventListener('WALL_CREATE', this.createWall.bind(this));
   }
 
-  callHenk() {
-    console.log('HEEEEENK!');
+  createWall(wallCreatedEvent) {
+    const { detail: wall } = wallCreatedEvent;
+    const [x, y] = wall.position;
+    const geometry = new THREE.BoxGeometry( SIZE, 1, SIZE);
+
+    const material = new THREE.MeshStandardMaterial();
+    material.color.setHex(0xffffff);
+
+    const mesh = new THREE.Mesh( geometry, material );
+    this.scene.add( mesh );
+    mesh.position.y = 0.5;
+
+    const [worldX, worldZ] = window.convert(x, y);
+
+    mesh.position.x = worldX;
+    mesh.position.z = worldZ;
+    // console.log('HEEEEENK!');
   }
 }
 
@@ -56,6 +70,11 @@ class _ThreeRenderer {
 
   initialize(worldData) {
     const { width, height } = worldData.dimensions;
+    this.width = width;
+    this.height = height;
+
+    // Fix this by passing this mapView to the renderers instead of just the scene
+    window.convert = this.convertFromGridToWold.bind(this);
 
     this.createScene();
     this.addLighting();
@@ -92,7 +111,7 @@ class _ThreeRenderer {
   
   createMap(width, height) {
     const geometry = new THREE.PlaneGeometry( width * SIZE, height * SIZE, 32 );
-    const material = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} );
+    const material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, material );
     plane.rotateX( - Math.PI / 2);
 
@@ -120,8 +139,8 @@ class _ThreeRenderer {
   convertFromGridToWold(x, y) {
     // WIDTH 1 in grid size is SIZE in threejs.
     // Then the center is at the center of the map instead of 0,0
-    const worldX = (SIZE * y) - (SIZE * (0.5 * MAP_SIZE - 0.5));
-    const worldZ = (SIZE * (0.5 * MAP_SIZE - 0.5)) - (SIZE * x);
+    const worldX = (SIZE * y) - (SIZE * (0.5 * this.width - 0.5));
+    const worldZ = (SIZE * (0.5 * this.height - 0.5)) - (SIZE * x);
 
     return [worldX, worldZ];
   }

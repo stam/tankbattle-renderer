@@ -6,13 +6,14 @@ class Controller {
   constructor() {
     this.threeRenderer = new ThreeRenderer(document.querySelector('.grid'));
     this.playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
+    this.worldStateManager = new WorldStateManager();
     this._interval = setInterval(() => this.tick(), 1000);
   }
   
   async initialize() {
     const data = await this.fetchWorld();
     this.threeRenderer.initialize(data);
-    this.worldStateManager = new WorldStateManager(data, this.threeRenderer.scene);
+    this.worldStateManager.initialize(this.threeRenderer.scene, data);
     this.updateViews(data);
   }
 

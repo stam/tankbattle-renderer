@@ -24,13 +24,25 @@ class _EventBus {
  * Fires the relevant updates (create, update, delete) to its respective renderers
  */
 class _WorldStateManager {
-  constructor(data, scene) {
+  constructor() {
     this.bus = new _EventBus();
+  }
+  
+  initialize(scene, initialWorld) {
     this.wallRenderer = new WallRenderer(scene, this.bus);
+
+    this.parseStatics(initialWorld);
+  }
+
+  parseStatics(initialWorld) {
+    const walls = initialWorld.staticObjects.filter(object => object.type === 'wall');
+    walls.forEach(wall => {
+      this.bus.dispatchEvent('WALL_CREATE', wall);
+    });
   }
 
   parse() {
-    this.bus.dispatchEvent('henk');
+    // this.bus.dispatchEvent('henk');
     // parseTankChanges
   }
 }
