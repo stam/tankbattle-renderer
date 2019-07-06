@@ -1,5 +1,6 @@
 const ThreeRenderer = window.ThreeRenderer;
 const PlayerListRenderer = window.PlayerListRenderer;
+const TreeRenderer = window.TreeRenderer;
 const WallRenderer = window.WallRenderer;
 const TankRenderer = window.TankRenderer;
 const WorldStateManager = window.WorldStateManager;
@@ -18,6 +19,7 @@ class Controller {
 
     this.wallRenderer = new WallRenderer(this.threeRenderer);
     this.tankRenderer = new TankRenderer(this.threeRenderer);
+    this.treeRenderer = new TreeRenderer(this.threeRenderer);
 
     this.bindRenderers();
 
@@ -59,6 +61,7 @@ class Controller {
 
   bindRenderers() {
     this.wallRenderer.bind(this.worldStateManager.bus);
+    this.treeRenderer.bind(this.worldStateManager.bus);
     this.tankRenderer.bind(this.worldStateManager.bus);
   }
 

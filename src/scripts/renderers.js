@@ -31,6 +31,45 @@ function getIntermediatePositions(startPosition, endPosition) {
   return output;
 }
 
+class _TreeRenderer {
+  constructor(threeRenderer) {
+    this.threeRenderer = threeRenderer;
+
+    this.zPosition = 2;
+    this.meshes = {};
+    this.geometry = new THREE.BoxGeometry(1, 4, 1);
+    this.material = new THREE.MeshStandardMaterial();
+    this.material.color.setHex(0x4e2d04);
+  }
+
+  bind(bus) {
+    bus.addEventListener('TREE_CREATE', this.create.bind(this));
+    bus.addEventListener('TREE_UPDATE', this.update.bind(this));
+    bus.addEventListener('TREE_DELETE', this.delete.bind(this));
+  }
+
+  create(assetEvent) {
+    const { detail: asset } = assetEvent;
+    const [x, y] = asset.position;
+    const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, this.zPosition);
+    
+    this.meshes[asset.id] = mesh;
+  }
+  
+  update() {
+    // do nothing
+  }
+  
+  delete(assetEvent) {
+    const { detail: asset } = assetEvent;
+    
+    const mesh = this.meshes[asset.id];
+    this.threeRenderer.removeFromScene(mesh);
+    delete this.meshes[asset.id];
+  }
+}
+
+
 class _TankRenderer {
   constructor(threeRenderer) {
     this.threeRenderer = threeRenderer;
@@ -43,32 +82,32 @@ class _TankRenderer {
   }
 
   bind(bus) {
-    bus.addEventListener('TANK_CREATE', this.createTank.bind(this));
-    bus.addEventListener('TANK_UPDATE', this.updateTank.bind(this));
-    bus.addEventListener('TANK_DELETE', this.deleteTank.bind(this));
+    bus.addEventListener('TANK_CREATE', this.create.bind(this));
+    bus.addEventListener('TANK_UPDATE', this.update.bind(this));
+    bus.addEventListener('TANK_DELETE', this.delete.bind(this));
   }
 
-  createTank(tankEvent) {
-    const { detail: tank } = tankEvent;
-    const [x, y] = tank.position;
+  create(assetEvent) {
+    const { detail: asset } = assetEvent;
+    const [x, y] = asset.position;
     const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, 1);
 
-    this.meshes[tank.id] = mesh;
+    this.meshes[asset.id] = mesh;
   }
 
-  updateTank(tankEvent) {
-    const { detail: tank } = tankEvent;
-    const [x, y] = tank.position;
-    const mesh = this.meshes[tank.id];
+  update(assetEvent) {
+    const { detail: asset } = assetEvent;
+    const [x, y] = asset.position;
+    const mesh = this.meshes[asset.id];
     this.threeRenderer.setPosition(mesh, x, y);
   }
 
-  deleteTank(tankEvent) {
-    const { detail: tank } = tankEvent;
+  delete(assetEvent) {
+    const { detail: asset } = assetEvent;
 
-    const mesh = this.meshes[tank.id];
+    const mesh = this.meshes[asset.id];
     this.threeRenderer.removeFromScene(mesh);
-    delete this.meshes[tank.id];
+    delete this.meshes[asset.id];
   }
 }
 
@@ -228,5 +267,6 @@ class _ThreeRenderer {
 }
 
 window.TankRenderer = _TankRenderer;
+window.TreeRenderer = _TreeRenderer;
 window.WallRenderer = _WallRenderer;
 window.ThreeRenderer = _ThreeRenderer;

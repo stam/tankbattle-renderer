@@ -46,28 +46,35 @@ class _WorldStateManager {
   }
 
   parse(worldData) {
-    const newIds = worldData.tanks.map(t => t.id);
-    const existingTanks = Object.values(this.tanks);
+    this.diff(this.tanks, worldData.tanks, 'TANK');
+
+    const newTrees = worldData.staticObjects.filter(obj => obj.type === 'tree');
+    this.diff(this.trees, newTrees, 'TREE');
+  }
+
+  diff(oldStateDict, newStateArray, eventPrefix) {
+    const newIds = newStateArray.map(t => t.id);
+    const existingAssets = Object.values(oldStateDict);
 
     // Find which tanks are deleted:
     // Existed in previous state but are not in current state
-    existingTanks.forEach((existingTank) => {
-      const id = existingTank.id;
+    existingAssets.forEach((existingAsset) => {
+      const id = existingAsset.id;
 
       if (!newIds.includes(id)) {
-        this.bus.dispatchEvent('TANK_DELETE', this.tanks[id]);
-        delete this.tanks[id];
+        this.bus.dispatchEvent(`${eventPrefix}_DELETE`, oldStateDict[id]);
+        delete oldStateDict[id];
       }
     });
 
-    worldData.tanks.forEach(updatedTank => {
-      if (this.tanks[updatedTank.id] === undefined) {
-        this.tanks[updatedTank.id] = updatedTank;
+    newStateArray.forEach(updatedAssset => {
+      if (oldStateDict[updatedAssset.id] === undefined) {
+        oldStateDict[updatedAssset.id] = updatedAssset;
 
-        this.bus.dispatchEvent('TANK_CREATE', updatedTank);
+        this.bus.dispatchEvent(`${eventPrefix}_CREATE`, updatedAssset);
         return;
       }
-      this.bus.dispatchEvent('TANK_UPDATE', updatedTank);
+      this.bus.dispatchEvent(`${eventPrefix}_UPDATE`, updatedAssset);
     });
   }
 }
