@@ -32,6 +32,24 @@ function getIntermediatePositions(startPosition, endPosition) {
   return output;
 }
 
+class _TankRenderer {
+  constructor(threeRenderer) {
+    this.threeRenderer = threeRenderer;
+  }
+
+  bind(bus) {
+    bus.addEventListener('TANK_CREATE', () => {
+      console.log('create tank');
+    });
+    bus.addEventListener('TANK_UPDATE', () => {
+      console.log('update tank');
+    });
+    bus.addEventListener('TANK_DELETE', (e) => {
+      console.log('delete tank', e.detail.id);
+    });
+  }
+}
+
 class _WallRenderer {
   constructor(threeRenderer) {
     this.threeRenderer = threeRenderer;
@@ -243,5 +261,6 @@ class _ThreeRenderer {
   }
 }
 
+window.TankRenderer = _TankRenderer;
 window.WallRenderer = _WallRenderer;
 window.ThreeRenderer = _ThreeRenderer;

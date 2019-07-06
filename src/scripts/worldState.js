@@ -39,15 +39,36 @@ class _WorldStateManager {
   parseStatics(initialWorld) {
     initialWorld.staticObjects
       .filter(object => object.type === 'wall')
-      .map(wall => {
+      .forEach(wall => {
         this.walls[wall.id] = wall;
         this.bus.dispatchEvent('WALL_CREATE', wall);
       });
   }
 
-  parse() {
-    // this.bus.dispatchEvent('henk');
-    // parseTankChanges
+  parse(worldData) {
+    const newIds = worldData.tanks.map(t => t.id);
+    const existingTanks = Object.values(this.tanks);
+
+    // Find which tanks are deleted:
+    // Existed in previous state but are not in current state
+    existingTanks.forEach((existingTank) => {
+      const id = existingTank.id;
+
+      if (!newIds.includes(id)) {
+        this.bus.dispatchEvent('TANK_DELETE', this.tanks[id]);
+        delete this.tanks[id];
+      }
+    });
+
+    worldData.tanks.forEach(updatedTank => {
+      if (this.tanks[updatedTank.id] === undefined) {
+        this.tanks[updatedTank.id] = updatedTank;
+
+        this.bus.dispatchEvent('TANK_CREATE', updatedTank);
+        return;
+      }
+      this.bus.dispatchEvent('TANK_UPDATE', updatedTank);
+    });
   }
 }
 

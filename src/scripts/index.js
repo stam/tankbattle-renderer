@@ -1,6 +1,7 @@
 const ThreeRenderer = window.ThreeRenderer;
 const PlayerListRenderer = window.PlayerListRenderer;
 const WallRenderer = window.WallRenderer;
+const TankRenderer = window.TankRenderer;
 const WorldStateManager = window.WorldStateManager;
 
 class Controller {
@@ -16,16 +17,26 @@ class Controller {
     this.threeRenderer.initialize(data);
 
     this.wallRenderer = new WallRenderer(this.threeRenderer);
-    // this.tankRenderer = new TankRenderer(this.threeRenderer);
+    this.tankRenderer = new TankRenderer(this.threeRenderer);
 
     this.bindRenderers();
     
     this.worldStateManager.initialize(data);
-    this.playerRenderer.render(data.tanks);
+    this.updateViews(data);
+    this.test(data);
+  }
+
+  test(data) {
+    const newData = JSON.parse(JSON.stringify(data));
+
+    this.updateViews(newData);
+    newData.tanks = [];
+    this.updateViews(newData);
   }
 
   bindRenderers() {
     this.wallRenderer.bind(this.worldStateManager.bus);
+    this.tankRenderer.bind(this.worldStateManager.bus);
   }
 
   async fetchWorld() {
@@ -38,7 +49,7 @@ class Controller {
 
   async tick() {
     const data = await this.fetchWorld();
-    this.updateViews(data);
+    // this.updateViews(data);
   }
 
   async updateViews(data) {
