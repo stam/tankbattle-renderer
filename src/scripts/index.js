@@ -1,143 +1,12 @@
-const TILE_EMPTY = 'empty';
-const TILE_TANK = 'tank';
-const TILE_TREE = 'tree';
-const TILE_WALL = 'wall';
-const TILE_SIZE = 50;
+const SIZE = 3;
+const MAP_SIZE = 12;
 const THREE = window.THREE;
 
-class World {
-  parse(worldData) {
-    this.grid = this.createGrid(worldData.dimensions.width, worldData.dimensions.width);
-    this.players = [];
-
-    this.addLasers(worldData.lasers);
-    this.addAssets(worldData.staticObjects);
-    this.addTanks(worldData.tanks);
-  }
-
-  createGrid(width, height) {
-    const grid = [];
-    for (let x = 0; x < width; x++) {
-      const row = [];
-
-      for (let y = 0; y < height; y++) {
-        row.push({
-          type: TILE_EMPTY,
-        });
-      }
-      grid.push(row);
-    }
-    return grid;
-  }
-
-  addAssets(objects) {
-    objects.forEach(object => {
-      const [x, y] = object.position;
-
-      this.grid[x][y] = object;
-    });
-  }
-
-  addTanks(tanks) {
-    tanks.forEach(tank => {
-      const [x, y] = tank.position;
-
-      this.grid[x][y] = tank;
-      this.grid[x][y].type = TILE_TANK;
-
-      this.players.push(tank);
-    });
-  }
-
-  addLasers(laserData) {
-    this.lasers = laserData;
-  }
-}
-
-function abortChildren(element) {
+function clearDomElement(element) {
   while (element.firstChild) {
     element.removeChild(element.firstChild);
   }
 }
-
-class GridRenderer {
-  constructor(domTarget) {
-    this.domTarget = domTarget;
-    abortChildren(this.domTarget);
-  }
-
-  render(world) {
-    world.grid.forEach(column => {
-      let element = document.createElement('div');
-      element.setAttribute('class', 'column');
-
-      column.forEach(entity => {
-        const tileElement = this.renderTile(entity);
-        element.appendChild(tileElement);
-      });
-      this.domTarget.appendChild(element);
-    });
-    this.renderLasers(world.lasers);
-  }
-
-  renderTile(entity) {
-    const element = document.createElement('div');
-    element.classList.add('tile');
-
-    switch (entity.type) {
-      case TILE_EMPTY:
-        break;
-      case TILE_TANK:
-        element.classList.add('tank');
-        element.classList.add(entity.orientation);
-        element.setAttribute('style', `background-color: ${entity.color}`);
-        break;
-      case TILE_TREE:
-        element.classList.add('tree');
-        break;
-      case TILE_WALL:
-        element.classList.add('wall');
-        break;
-    }
-    return element;
-  }
-
-  renderLasers(lasers) {
-    lasers.forEach(laser => {
-      const element = document.createElement('div');
-      element.classList.add('laser');
-      const [startX, startY] = laser.startPos;
-      const [endX, endY] = laser.endPos;
-
-      let width;
-      let height;
-      let left = startX;
-      let top = startY;
-
-      if (['north', 'south'].includes(laser.direction)) {
-        // vertical
-        width = TILE_SIZE;
-        height = (Math.abs(endY - startY) + 1) * TILE_SIZE;
-        top = Math.min(startY, endY);
-      } else {
-        // horizontal
-        height = TILE_SIZE;
-        width = (Math.abs(endX - startX) + 1) * TILE_SIZE;
-        left = Math.min(startX, endX);
-      }
-
-      element.setAttribute(
-        'style',
-        `left: ${left * TILE_SIZE}px; top: ${top *
-          TILE_SIZE}px; width: ${width}px; height: ${height}px;`,
-      );
-      this.domTarget.append(element);
-    });
-  }
-}
-
-const SIZE = 3;
-const MAP_SIZE = 12;
 
 class WorldRenderer3d {
   constructor(container) {
@@ -280,9 +149,11 @@ class WorldRenderer3d {
       const [xEnd, yEnd] = laser.endPos;
       this.createObjectAtPosition(geometry, material, xEnd, yEnd, 1.5);
 
-      for (let yIntermediate = yStart; yIntermediate <= yEnd; yIntermediate++) {
-        this.createObjectAtPosition(geometry, material, 1, yIntermediate, 1.5);
-      }
+      const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
+
+      intermediatePositions.forEach(position => {
+        this.createObjectAtPosition(geometry, material, position[0], position[1], 1.5);
+      });
     });
   }
 
@@ -306,7 +177,7 @@ class WorldRenderer3d {
 class PlayerListRenderer {
   constructor(domTarget) {
     this.domTarget = domTarget;
-    abortChildren(this.domTarget);
+    clearDomElement(this.domTarget);
   }
 
   render(players) {
@@ -342,17 +213,45 @@ class PlayerListRenderer {
 function renderWorld(data) {
   const worldRenderer = new WorldRenderer3d(document.querySelector('.grid'));
   const playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
-  const world = new World();
 
-  world.parse(data);
   worldRenderer.render(data);
-  playerRenderer.render(world.players);
+  playerRenderer.render(data.tanks);
 }
 
 async function tick() {
   const response = await fetch('/world');
   const data = await response.json();
   renderWorld(data);
+}
+
+function getValuesBetween(start, end) {
+  const output = [];
+  let value = start;
+
+  while (value <= end) {
+    output.push(value);
+    value++;
+  }
+  return output;
+}
+
+function getIntermediatePositions(startPosition, endPosition) {
+  const [startX, startY] = startPosition;
+  const [endX, endY] = endPosition;
+  const output = [];
+  const xIntermediate = getValuesBetween(startX, endX);
+  const yIntermediate = getValuesBetween(startY, endY);
+
+  xIntermediate.forEach(x => {
+    yIntermediate.forEach(y => {
+      if (x === startX && y === startY || x === endX && y === endY ) {
+        return;
+      }
+      output.push([x, y]);
+    });
+  });
+
+  return output;
 }
 
 function startGameloop() {
