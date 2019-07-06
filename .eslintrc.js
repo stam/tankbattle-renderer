@@ -8,7 +8,6 @@ module.exports = {
         "ecmaVersion": 2018
     },
     "rules": {
-        "prettier/prettier": "error",
         "indent": [
             "error",
             2
