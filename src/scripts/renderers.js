@@ -55,13 +55,6 @@ class _BaseRenderer {
     this.meshes[asset.id] = mesh;
   }
 
-  update(assetEvent) {
-    const { detail: asset } = assetEvent;
-    const [x, y] = asset.position;
-    const mesh = this.meshes[asset.id];
-    this.threeRenderer.setPosition(mesh, x, y);
-  }
-
   delete(assetEvent) {
     const { detail: asset } = assetEvent;
 
@@ -163,6 +156,17 @@ class _TankRenderer extends _BaseRenderer {
     this.material.color.setHex(0x1a560a);
   }
 
+  update(tankEvent) {
+    const { detail: tank } = tankEvent;
+    const [x, y] = tank.position;
+    const mesh = this.meshes[tank.id];
+    this.threeRenderer.setPosition(mesh, x, y);
+    this.threeRenderer.setRotation(mesh, tank.orientation);
+
+    return mesh;
+  }
+
+
   create(assetEvent) {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
@@ -262,6 +266,7 @@ class _ThreeRenderer {
   setRotation(mesh, orientation) {
     switch (orientation) {
       case 'north':
+        mesh.rotation.y = 0;
         return;
       case 'east':
         mesh.rotation.y = -0.5 * Math.PI;
@@ -273,7 +278,7 @@ class _ThreeRenderer {
         mesh.rotation.y = 0.5 * Math.PI;
         return;
       default:
-        throw new Error(`Unsupported orentation found: ${orientation}`)
+        throw new Error(`Unsupported orientation found: ${orientation}`)
     }
   }
 
