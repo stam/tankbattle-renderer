@@ -147,13 +147,9 @@ class _TankRenderer extends _BaseRenderer {
   constructor(...args) {
     super(...args);
 
-    this.zPosition = 0.75;
-    this.material = new THREE.MeshStandardMaterial();
-
     this.hullGeometry = new THREE.BoxGeometry(2.5, 1.5, 2);
     this.turretGeometry = new THREE.BoxGeometry(1.5, 1, 1.5);
     this.barrelGeometry = new THREE.BoxGeometry(2.5, 0.5, 0.5);
-    this.material.color.setHex(0x1a560a);
   }
 
   update(tankEvent) {
@@ -173,15 +169,18 @@ class _TankRenderer extends _BaseRenderer {
 
     const group = new THREE.Group();
 
-    const hull = new THREE.Mesh(this.hullGeometry, this.material);
+    const playerMaterial = new THREE.MeshStandardMaterial();
+    playerMaterial.color = new THREE.Color(asset.color);
+
+    const hull = new THREE.Mesh(this.hullGeometry, playerMaterial);
     hull.position.y = 0.75;
     group.add(hull);
 
-    const turret = new THREE.Mesh(this.turretGeometry, this.material);
+    const turret = new THREE.Mesh(this.turretGeometry, playerMaterial);
     turret.position.y = 1.5 + 0.5;
     group.add(turret);
 
-    const barrel = new THREE.Mesh(this.barrelGeometry, this.material);
+    const barrel = new THREE.Mesh(this.barrelGeometry, playerMaterial);
     barrel.position.y = 1.5 + 0.5;
     barrel.position.x = -1.25;
     group.add(barrel);
