@@ -1,7 +1,6 @@
 const SIZE = 3;
 const THREE = window.THREE;
 
-
 function getValuesBetween(start, end) {
   const output = [];
   let value = start;
@@ -22,7 +21,7 @@ function getIntermediatePositions(startPosition, endPosition) {
 
   xIntermediate.forEach(x => {
     yIntermediate.forEach(y => {
-      if (x === startX && y === startY || x === endX && y === endY ) {
+      if ((x === startX && y === startY) || (x === endX && y === endY)) {
         return;
       }
       output.push([x, y]);
@@ -40,7 +39,7 @@ class _TankRenderer {
 
     this.geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
     this.material = new THREE.MeshStandardMaterial();
-    this.material.color.setHex(0x1A560A);
+    this.material.color.setHex(0x1a560a);
   }
 
   bind(bus) {
@@ -51,24 +50,19 @@ class _TankRenderer {
 
   createTank(tankEvent) {
     const { detail: tank } = tankEvent;
-
     const [x, y] = tank.position;
-    const mesh = new THREE.Mesh(this.geometry, this.material);
-    mesh.position.y = 1;
-
-    this.threeRenderer.addToScene(mesh);
-    this.threeRenderer.setPosition(mesh, x, y);
+    const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, 1);
 
     this.meshes[tank.id] = mesh;
   }
-  
+
   updateTank(tankEvent) {
     const { detail: tank } = tankEvent;
     const [x, y] = tank.position;
     const mesh = this.meshes[tank.id];
     this.threeRenderer.setPosition(mesh, x, y);
   }
-  
+
   deleteTank(tankEvent) {
     const { detail: tank } = tankEvent;
 
@@ -81,6 +75,11 @@ class _TankRenderer {
 class _WallRenderer {
   constructor(threeRenderer) {
     this.threeRenderer = threeRenderer;
+
+    this.geometry = new THREE.BoxGeometry(SIZE, 1, SIZE);
+
+    this.material = new THREE.MeshStandardMaterial();
+    this.material.color.setHex(0xffffff);
   }
 
   bind(bus) {
@@ -90,15 +89,7 @@ class _WallRenderer {
   createWall(wallCreatedEvent) {
     const { detail: wall } = wallCreatedEvent;
     const [x, y] = wall.position;
-    const geometry = new THREE.BoxGeometry( SIZE, 1, SIZE);
-
-    const material = new THREE.MeshStandardMaterial();
-    material.color.setHex(0xffffff);
-
-    const mesh = new THREE.Mesh( geometry, material );
-    this.threeRenderer.addToScene(mesh);
-    this.threeRenderer.setPosition(mesh, x, y);
-    mesh.position.y = 0.5;
+    this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, 0.5);
   }
 }
 
@@ -121,19 +112,18 @@ class _ThreeRenderer {
   createScene() {
     const { width, height } = this.container.getBoundingClientRect();
     this.scene = new THREE.Scene();
-    
+
     const aspect = width / height;
     const d = 20;
-    this.camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000  );
-    this.camera.position.set( 20, 20, 20 );
-    this.camera.lookAt( this.scene.position );
-    
-    
+    this.camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+    this.camera.position.set(20, 20, 20);
+    this.camera.lookAt(this.scene.position);
+
     this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setClearColor(0xFFFFFF, 1);
-    this.renderer.setSize( width, height );
-    this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
-    this.container.appendChild( this.renderer.domElement );
+    this.renderer.setClearColor(0xffffff, 1);
+    this.renderer.setSize(width, height);
+    this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+    this.container.appendChild(this.renderer.domElement);
   }
 
   addToScene(mesh) {
@@ -145,7 +135,7 @@ class _ThreeRenderer {
   }
 
   setPosition(mesh, x, y) {
-    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
+    const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
 
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
@@ -153,28 +143,28 @@ class _ThreeRenderer {
 
   addLighting() {
     const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
-    this.scene.add( hemisphere );
+    this.scene.add(hemisphere);
 
-    const sun = new THREE.PointLight( 0xffffff, 0.8 );
-    sun.position.set( 0, 50, 50 );
-    this.scene.add( sun );
+    const sun = new THREE.PointLight(0xffffff, 0.8);
+    sun.position.set(0, 50, 50);
+    this.scene.add(sun);
   }
-  
+
   createMap(width, height) {
-    const geometry = new THREE.PlaneGeometry( width * SIZE, height * SIZE, 32 );
-    const material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, side: THREE.DoubleSide} );
-    const plane = new THREE.Mesh( geometry, material );
-    plane.rotateX( - Math.PI / 2);
+    const geometry = new THREE.PlaneGeometry(width * SIZE, height * SIZE, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(geometry, material);
+    plane.rotateX(-Math.PI / 2);
 
-    this.scene.add( plane );
-    this.scene.add( new THREE.AxisHelper( 40 ) );
+    this.scene.add(plane);
+    this.scene.add(new THREE.AxisHelper(40));
   }
 
-  convertFromGridToWold(x, y) {
+  convertFromGridToWorld(x, y) {
     // WIDTH 1 in grid size is SIZE in threejs.
     // Then the center is at the center of the map instead of 0,0
-    const worldX = (SIZE * y) - (SIZE * (0.5 * this.width - 0.5));
-    const worldZ = (SIZE * (0.5 * this.height - 0.5)) - (SIZE * x);
+    const worldX = SIZE * y - SIZE * (0.5 * this.width - 0.5);
+    const worldZ = SIZE * (0.5 * this.height - 0.5) - SIZE * x;
 
     return [worldX, worldZ];
   }
@@ -183,16 +173,16 @@ class _ThreeRenderer {
     const geometry = new THREE.BoxGeometry(1, 4, 1);
 
     const material = new THREE.MeshStandardMaterial();
-    material.color.setHex(0x4E2D04);
+    material.color.setHex(0x4e2d04);
 
     trees.map(tree => {
       const [x, y] = tree.position;
-      const mesh = new THREE.Mesh( geometry, material );
-      this.scene.add( mesh );
+      const mesh = new THREE.Mesh(geometry, material);
+      this.scene.add(mesh);
       mesh.position.y = 2;
-  
-      const [worldX, worldZ] = this.convertFromGridToWold(x, y);
-  
+
+      const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
+
       mesh.position.x = worldX;
       mesh.position.z = worldZ;
     });
@@ -207,7 +197,7 @@ class _ThreeRenderer {
     lasers.forEach(laser => {
       const [xStart, yStart] = laser.startPos;
       this.createObjectAtPosition(geometry, material, xStart, yStart, 1.5);
-      
+
       const [xEnd, yEnd] = laser.endPos;
       this.createObjectAtPosition(geometry, material, xEnd, yEnd, 1.5);
 
@@ -220,20 +210,20 @@ class _ThreeRenderer {
   }
 
   createObjectAtPosition(geometry, material, x, y, height) {
-    const [worldX, worldZ] = this.convertFromGridToWold(x, y);
-    const mesh = new THREE.Mesh( geometry, material);
+    const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
+    const mesh = new THREE.Mesh(geometry, material);
 
     mesh.position.y = height;
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
-    this.scene.add( mesh );
+    this.scene.add(mesh);
 
     return mesh;
   }
-  
+
   animate() {
     window.requestAnimationFrame(() => this.animate());
-    this.renderer.render(this.scene, this.camera );
+    this.renderer.render(this.scene, this.camera);
   }
 }
 
