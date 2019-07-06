@@ -1,6 +1,7 @@
 const ThreeRenderer = window.ThreeRenderer;
 const PlayerListRenderer = window.PlayerListRenderer;
 const TreeRenderer = window.TreeRenderer;
+const LaserRenderer = window.LaserRenderer;
 const WallRenderer = window.WallRenderer;
 const TankRenderer = window.TankRenderer;
 const WorldStateManager = window.WorldStateManager;
@@ -18,6 +19,7 @@ class Controller {
     this.threeRenderer.initialize(data);
 
     this.wallRenderer = new WallRenderer(this.threeRenderer);
+    this.laserRenderer = new LaserRenderer(this.threeRenderer);
     this.tankRenderer = new TankRenderer(this.threeRenderer);
     this.treeRenderer = new TreeRenderer(this.threeRenderer);
 
@@ -26,6 +28,13 @@ class Controller {
     this.worldStateManager.initialize(data);
     this.updateViews(data);
     this.test(data);
+  }
+
+  bindRenderers() {
+    this.wallRenderer.bind(this.worldStateManager.bus);
+    this.treeRenderer.bind(this.worldStateManager.bus);
+    this.laserRenderer.bind(this.worldStateManager.bus);
+    this.tankRenderer.bind(this.worldStateManager.bus);
   }
 
   test(data) {
@@ -57,12 +66,6 @@ class Controller {
       deleteData.tanks = [];
       this.updateViews(deleteData);
     }, 5000);
-  }
-
-  bindRenderers() {
-    this.wallRenderer.bind(this.worldStateManager.bus);
-    this.treeRenderer.bind(this.worldStateManager.bus);
-    this.tankRenderer.bind(this.worldStateManager.bus);
   }
 
   async fetchWorld() {

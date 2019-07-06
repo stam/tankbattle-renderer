@@ -50,6 +50,7 @@ class _WorldStateManager {
 
     const newTrees = worldData.staticObjects.filter(obj => obj.type === 'tree');
     this.diff(this.trees, newTrees, 'TREE');
+    this.diff(this.lasers, worldData.lasers, 'LASER');
   }
 
   diff(oldStateDict, newStateArray, eventPrefix) {

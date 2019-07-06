@@ -1,6 +1,15 @@
 window._world = {
   id: 'a2e7011c-3444-4e19-bf3d-0ab3a2269b35',
-  lasers: [],
+  lasers: [
+    {
+      id: '297ca28d-0d28-446f-86be-76d8c7afd753',
+      startPos: [1, 5],
+      endPos: [1, 10],
+      direction: 'south',
+      startTime: 1562058508795,
+      endTime: 1562058510795,
+    },
+  ],
   tanks: [
     {
       id: '297ca28d-0d28-446e-86be-76d8c7afd753',

@@ -31,66 +31,17 @@ function getIntermediatePositions(startPosition, endPosition) {
   return output;
 }
 
-class _TreeRenderer {
+class _BaseRenderer {
   constructor(threeRenderer) {
-    this.threeRenderer = threeRenderer;
-
-    this.zPosition = 2;
     this.meshes = {};
-    this.geometry = new THREE.BoxGeometry(1, 4, 1);
-    this.material = new THREE.MeshStandardMaterial();
-    this.material.color.setHex(0x4e2d04);
-  }
-
-  bind(bus) {
-    bus.addEventListener('TREE_CREATE', this.create.bind(this));
-    bus.addEventListener('TREE_UPDATE', this.update.bind(this));
-    bus.addEventListener('TREE_DELETE', this.delete.bind(this));
+    this.threeRenderer = threeRenderer;
   }
 
   create(assetEvent) {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
     const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, this.zPosition);
-    
-    this.meshes[asset.id] = mesh;
-  }
-  
-  update() {
-    // do nothing
-  }
-  
-  delete(assetEvent) {
-    const { detail: asset } = assetEvent;
-    
-    const mesh = this.meshes[asset.id];
-    this.threeRenderer.removeFromScene(mesh);
-    delete this.meshes[asset.id];
-  }
-}
-
-
-class _TankRenderer {
-  constructor(threeRenderer) {
-    this.threeRenderer = threeRenderer;
-
-    this.meshes = {};
-
-    this.geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
-    this.material = new THREE.MeshStandardMaterial();
-    this.material.color.setHex(0x1a560a);
-  }
-
-  bind(bus) {
-    bus.addEventListener('TANK_CREATE', this.create.bind(this));
-    bus.addEventListener('TANK_UPDATE', this.update.bind(this));
-    bus.addEventListener('TANK_DELETE', this.delete.bind(this));
-  }
-
-  create(assetEvent) {
-    const { detail: asset } = assetEvent;
-    const [x, y] = asset.position;
-    const mesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, 1);
+    this.threeRenderer.addToScene(mesh);
 
     this.meshes[asset.id] = mesh;
   }
@@ -111,24 +62,91 @@ class _TankRenderer {
   }
 }
 
-class _WallRenderer {
-  constructor(threeRenderer) {
-    this.threeRenderer = threeRenderer;
+class _LaserRenderer extends _BaseRenderer {
+  constructor(...args) {
+    super(...args);
 
+    this.zPosition = 1.5;
+    this.geometry = new THREE.BoxGeometry(3, 1, 1);
+    this.material = new THREE.MeshNormalMaterial();
+  }
+
+  bind(bus) {
+    bus.addEventListener('LASER_CREATE', this.create.bind(this));
+    bus.addEventListener('LASER_DELETE', this.delete.bind(this));
+  }
+
+  create(assetEvent) {
+    const { detail: laser } = assetEvent;
+
+    const group = new THREE.Group();
+
+    const [xStart, yStart] = laser.startPos;
+    const startMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, xStart, yStart, 1.5);
+    group.add(startMesh);
+    
+    const [xEnd, yEnd] = laser.endPos;
+    const endMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, xEnd, yEnd, 1.5);
+    group.add(endMesh);
+    
+    const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
+    intermediatePositions.forEach(position => {
+      const intermediateMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, position[0], position[1], 1.5);
+      group.add(intermediateMesh);
+    });
+
+    this.threeRenderer.addToScene(group);
+    this.meshes[laser.id] = group;
+  }
+}
+
+class _TreeRenderer extends _BaseRenderer {
+  constructor(...args) {
+    super(...args);
+
+    this.zPosition = 2;
+    this.geometry = new THREE.BoxGeometry(1, 4, 1);
+    this.material = new THREE.MeshStandardMaterial();
+    this.material.color.setHex(0x4e2d04);
+  }
+
+  bind(bus) {
+    bus.addEventListener('TREE_CREATE', this.create.bind(this));
+    // Trees don't need updates
+    bus.addEventListener('TREE_DELETE', this.delete.bind(this));
+  }
+}
+
+
+class _TankRenderer extends _BaseRenderer {
+  constructor(...args) {
+    super(...args);
+
+    this.zPosition = 1;
+    this.geometry = new THREE.BoxGeometry(SIZE, 2, SIZE);
+    this.material = new THREE.MeshStandardMaterial();
+    this.material.color.setHex(0x1a560a);
+  }
+
+  bind(bus) {
+    bus.addEventListener('TANK_CREATE', this.create.bind(this));
+    bus.addEventListener('TANK_UPDATE', this.update.bind(this));
+    bus.addEventListener('TANK_DELETE', this.delete.bind(this));
+  }
+}
+
+class _WallRenderer extends _BaseRenderer {
+  constructor(...args) {
+    super(...args);
+
+    this.zPosition = 0.5;
     this.geometry = new THREE.BoxGeometry(SIZE, 1, SIZE);
-
     this.material = new THREE.MeshStandardMaterial();
     this.material.color.setHex(0xffffff);
   }
 
   bind(bus) {
-    bus.addEventListener('WALL_CREATE', this.createWall.bind(this));
-  }
-
-  createWall(wallCreatedEvent) {
-    const { detail: wall } = wallCreatedEvent;
-    const [x, y] = wall.position;
-    this.threeRenderer.createObjectAtPosition(this.geometry, this.material, x, y, 0.5);
+    bus.addEventListener('WALL_CREATE', this.create.bind(this));
   }
 }
 
@@ -208,46 +226,6 @@ class _ThreeRenderer {
     return [worldX, worldZ];
   }
 
-  createTrees(trees) {
-    const geometry = new THREE.BoxGeometry(1, 4, 1);
-
-    const material = new THREE.MeshStandardMaterial();
-    material.color.setHex(0x4e2d04);
-
-    trees.map(tree => {
-      const [x, y] = tree.position;
-      const mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(mesh);
-      mesh.position.y = 2;
-
-      const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
-
-      mesh.position.x = worldX;
-      mesh.position.z = worldZ;
-    });
-  }
-
-  createLasers(lasers) {
-    const geometry = new THREE.BoxGeometry(3, 1, 1);
-
-    const material = new THREE.MeshNormalMaterial();
-    // material.color.setHex(0xFE69B4);
-
-    lasers.forEach(laser => {
-      const [xStart, yStart] = laser.startPos;
-      this.createObjectAtPosition(geometry, material, xStart, yStart, 1.5);
-
-      const [xEnd, yEnd] = laser.endPos;
-      this.createObjectAtPosition(geometry, material, xEnd, yEnd, 1.5);
-
-      const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
-
-      intermediatePositions.forEach(position => {
-        this.createObjectAtPosition(geometry, material, position[0], position[1], 1.5);
-      });
-    });
-  }
-
   createObjectAtPosition(geometry, material, x, y, height) {
     const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
     const mesh = new THREE.Mesh(geometry, material);
@@ -255,7 +233,6 @@ class _ThreeRenderer {
     mesh.position.y = height;
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
-    this.scene.add(mesh);
 
     return mesh;
   }
@@ -266,6 +243,7 @@ class _ThreeRenderer {
   }
 }
 
+window.LaserRenderer = _LaserRenderer;
 window.TankRenderer = _TankRenderer;
 window.TreeRenderer = _TreeRenderer;
 window.WallRenderer = _WallRenderer;
