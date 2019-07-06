@@ -11,7 +11,7 @@ class Controller {
     this.threeRenderer = new ThreeRenderer(document.querySelector('.grid'));
     this.playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
     this.worldStateManager = new WorldStateManager();
-    this._interval = setInterval(() => this.tick(), 1000);
+    this._interval = setInterval(() => this.tick(), 100);
   }
 
   async initialize() {
@@ -27,7 +27,7 @@ class Controller {
 
     this.worldStateManager.initialize(data);
     this.updateViews(data);
-    this.test(data);
+    // this.test(data);
   }
 
   bindRenderers() {
@@ -69,7 +69,7 @@ class Controller {
   }
 
   async fetchWorld() {
-    // const response = await fetch('/world');
+    // const response = await fetch('http://localhost:3000/world');
     // const data = await response.json();
     // return data;
 
@@ -87,27 +87,8 @@ class Controller {
   }
 }
 
-// function renderWorld(data) {
-//   const worldRenderer = new ThreeRenderer(document.querySelector('.grid'));
-//   const playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
-
-//   worldRenderer.render(data);
-//   playerRenderer.render(data.tanks);
-// }
-
-// async function tick() {
-//   const response = await fetch('/world');
-//   const data = await response.json();
-//   renderWorld(data);
-// }
-
-// function startGameloop() {
-//   setInterval(tick, 100);
-// }
 
 window.onload = async () => {
   const controller = new Controller();
   await controller.initialize();
-  // controller.start();
-  // renderWorld(window._world);
 };

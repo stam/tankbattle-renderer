@@ -3,9 +3,12 @@ const THREE = window.THREE;
 
 function getValuesBetween(start, end) {
   const output = [];
-  let value = start;
 
-  while (value <= end) {
+  const min = Math.min(start, end);
+  const max = Math.max(start, end);
+  let value = min;
+
+  while (value <= max) {
     output.push(value);
     value++;
   }
@@ -94,6 +97,12 @@ class _LaserRenderer extends _BaseRenderer {
       const intermediateMesh = this.threeRenderer.createObjectAtPosition(this.geometry, this.material, position[0], position[1], 1.5);
       group.add(intermediateMesh);
     });
+
+    if (['east', 'west'].includes(laser.direction)) {
+      group.children.forEach((mesh) => {
+        mesh.rotation.y = 0.5 * Math.PI;
+      });
+    }
 
     this.threeRenderer.addToScene(group);
     this.meshes[laser.id] = group;
