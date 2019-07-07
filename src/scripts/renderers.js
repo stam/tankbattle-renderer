@@ -177,13 +177,41 @@ class _TankRenderer extends _BaseRenderer {
     return mesh;
   }
 
+  createPlayerLabel(color, name) {
+    var canvas = document.createElement('canvas');
+
+    const width = 400;
+    const height = 400;
+    canvas.width = width;
+    canvas.height = height;
+    var ctx = canvas.getContext("2d");
+    ctx.scale(2,2)
+    ctx.textAlign = 'center';
+    ctx.fillStyle = color;
+    ctx.fillRect(95, 0, 10, 10);
+    ctx.fillStyle = 'white';
+    ctx.font = "19px monospace";
+    ctx.fillText(name, 100, 30);
+    var texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    var mat = new THREE.SpriteMaterial({
+      map: texture,
+    });
+  
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(10, 10, 1);
+    return sprite;
+  }
 
   create(assetEvent) {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
 
+    const sprite = this.createPlayerLabel(asset.color, asset.name);
 
     const mesh = this.tankMesh.clone();
+    mesh.add(sprite);
     mesh.position.y = 1.65;
     mesh.children[0].castShadow = true;
 
