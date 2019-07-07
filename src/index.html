@@ -4,48 +4,61 @@
     <meta charset="utf-8" />
     <title>Tank Battle</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        body {
-          font-family: monospace;
-          display: grid;
-          grid-template-columns: 1fr 200px;
-        }
+      body {
+        font-family: monospace;
+      }
 
-        .grid {
-          display: flex;
-          position: relative;
-          height: 100vh;
-        }
+      .grid {
+        display: flex;
+        position: relative;
+        height: 100vh;
+      }
 
-        .player {
-          font-size: 1.2rem;
-          display: flex;
-          align-items: center;
-        }
+      .player-list {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        width: 250px;
+        font-size: 1.2rem;
+      }
 
-        .player-name {
-          flex: 1;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
+      .player {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
-        .player-life {
-          margin-left: auto;
-        }
+        overflow: hidden;
+        border-radius: 4px;
+        padding-right: 1rem;
+        margin-bottom: 1rem;
+        padding-left: 0;
 
-        .color-indicator {
-          width: 20px;
-          height: 20px;
-          border: 1px solid black;
-          margin-right: 1rem;
-        }
+        background: white;
+      }
+
+      .player-name {
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .player-life {
+        margin-left: auto;
+      }
+
+      .color-indicator {
+        width: 1rem;
+        align-self: stretch;
+        margin-right: 1rem;
+      }
     </style>
   </head>
-  <body>
+  <body style="background: #57b1ff;">
     <div class="grid"></div>
     <div class="player-list"></div>
   </body>

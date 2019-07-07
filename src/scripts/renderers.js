@@ -226,7 +226,10 @@ class _ThreeRenderer {
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.shadowMap.enabled = true;
-    this.renderer.setClearColor(0xffffff, 1);
+
+    const backgroundColor = new THREE.Color(document.body.style.background);
+    this.renderer.setClearColor(backgroundColor, 1);
+
     this.renderer.setSize(width, height);
     this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
     this.container.appendChild(this.renderer.domElement);
@@ -282,7 +285,6 @@ class _ThreeRenderer {
     plane.rotateX(-Math.PI / 2);
 
     this.scene.add(plane);
-    this.scene.add(new THREE.AxisHelper(40));
   }
 
   convertFromGridToWorld(x, y) {
