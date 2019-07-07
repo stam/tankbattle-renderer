@@ -142,7 +142,6 @@ class _TreeRenderer extends _BaseRenderer {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
 
-
     const mesh = this.treeMesh.clone();
     mesh.position.y = 1.65;
     mesh.castShadow = true;
@@ -178,29 +177,33 @@ class _TankRenderer extends _BaseRenderer {
   }
 
   createPlayerLabel(color, name) {
-    var canvas = document.createElement('canvas');
-
+    const canvas = document.createElement('canvas');
     const width = 400;
     const height = 400;
     canvas.width = width;
     canvas.height = height;
-    var ctx = canvas.getContext("2d");
-    ctx.scale(2,2)
-    ctx.textAlign = 'center';
-    ctx.fillStyle = color;
-    ctx.fillRect(95, 0, 10, 10);
-    ctx.fillStyle = 'white';
-    ctx.font = "19px monospace";
-    ctx.fillText(name, 100, 30);
-    var texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
 
-    var mat = new THREE.SpriteMaterial({
-      map: texture,
+    const context = canvas.getContext('2d');
+    context.scale(2, 2);
+    context.textAlign = 'center';
+    context.fillStyle = color;
+    context.fillRect(95, 0, 10, 10);
+    context.fillStyle = 'white';
+    context.strokeStyle = 'black';
+    context.lineWidth = 3;
+    context.font = '19px monospace';
+    context.strokeText(name, 100, 30);
+    context.fillText(name, 100, 30);
+    const canvasTexture = new THREE.Texture(canvas);
+    canvasTexture.needsUpdate = true;
+
+    const mat = new THREE.SpriteMaterial({
+      map: canvasTexture,
     });
-  
+
     const sprite = new THREE.Sprite(mat);
     sprite.scale.set(10, 10, 1);
+    sprite.position.y = -2;
     return sprite;
   }
 
@@ -311,37 +314,37 @@ class _ThreeRenderer {
         mesh.rotation.y = 0.5 * Math.PI;
         return;
       default:
-        throw new Error(`Unsupported orientation found: ${orientation}`)
+        throw new Error(`Unsupported orientation found: ${orientation}`);
     }
   }
 
   addLighting() {
-    var ambientLight = new THREE.AmbientLight( 0x330000 );
-    this.scene.add( ambientLight );
+    const ambientLight = new THREE.AmbientLight(0x330000);
+    this.scene.add(ambientLight);
 
     const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.8);
     this.scene.add(hemisphere);
 
     const height = 10.75;
-    const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
-    dirLight.color.setHSL( 0.1, 1, 0.95 );
-    dirLight.position.set( -10, 1 * height, 10 );
-    this.scene.add( dirLight );
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.color.setHSL(0.1, 1, 0.95);
+    dirLight.position.set(-10, 1 * height, 10);
+    this.scene.add(dirLight);
     dirLight.castShadow = true;
     dirLight.position.multiplyScalar(5);
     dirLight.shadow.mapSize.width = 512;
     dirLight.shadow.mapSize.height = 512;
 
-    var d = 20;
+    const d = 20;
     dirLight.shadow.camera.left = -d;
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;
     dirLight.shadow.camera.bottom = -d;
-    
-    const light2 = new THREE.DirectionalLight( 0x36FEFF, 1 );
-    light2.color.setHSL( 0.1, 1, 0.95 );
-    light2.position.set( 10, height, -10 );
-    this.scene.add( light2 );    
+
+    const light2 = new THREE.DirectionalLight(0x36feff, 1);
+    light2.color.setHSL(0.1, 1, 0.95);
+    light2.position.set(10, height, -10);
+    this.scene.add(light2);
   }
 
   createMap(width, height) {
