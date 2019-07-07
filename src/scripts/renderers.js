@@ -168,7 +168,7 @@ class _TankRenderer extends _BaseRenderer {
 
 
     const mesh = this.tankMesh.clone();
-    mesh.position.y = 2;
+    mesh.position.y = 1.65;
     mesh.children[0].castShadow = true;
 
     this.threeRenderer.setPosition(mesh, x, y);
@@ -275,34 +275,29 @@ class _ThreeRenderer {
     var ambientLight = new THREE.AmbientLight( 0x330000 );
     this.scene.add( ambientLight );
 
-    const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9);
+    const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.8);
     this.scene.add(hemisphere);
 
-    var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    const height = 10.75;
+    const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
     dirLight.color.setHSL( 0.1, 1, 0.95 );
-    dirLight.position.set( -10, 10.75, 10 );
-    dirLight.position.multiplyScalar( 10 );
+    dirLight.position.set( -10, 1 * height, 10 );
     this.scene.add( dirLight );
-
     dirLight.castShadow = true;
+    dirLight.position.multiplyScalar(5);
+    dirLight.shadow.mapSize.width = 512;
+    dirLight.shadow.mapSize.height = 512;
 
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-
-    var d = 150;
-
+    var d = 20;
     dirLight.shadow.camera.left = -d;
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;
     dirLight.shadow.camera.bottom = -d;
-
-    dirLight.shadow.camera.far = 3500;
-    dirLight.shadow.bias = -0.0001;
-
-    var helper = new THREE.DirectionalLightHelper( dirLight, 5 );
-    this.scene.add(helper);
-
-    window.dirLight = dirLight;
+    
+    const light2 = new THREE.DirectionalLight( 0x36FEFF, 1 );
+    light2.color.setHSL( 0.1, 1, 0.95 );
+    light2.position.set( 10, height, -10 );
+    this.scene.add( light2 );    
   }
 
   createMap(width, height) {
