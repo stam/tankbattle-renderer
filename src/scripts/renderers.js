@@ -128,13 +128,29 @@ class _LaserRenderer extends _BaseRenderer {
 }
 
 class _TreeRenderer extends _BaseRenderer {
-  constructor(...args) {
-    super(...args);
+  constructor(renderer, treeMesh) {
+    super(renderer);
 
+    this.treeMesh = treeMesh;
     this.zPosition = 2;
     this.geometry = new THREE.BoxGeometry(1, 4, 1);
     this.material = new THREE.MeshStandardMaterial();
     this.material.color.setHex(0x4e2d04);
+  }
+
+  create(assetEvent) {
+    const { detail: asset } = assetEvent;
+    const [x, y] = asset.position;
+
+
+    const mesh = this.treeMesh.clone();
+    mesh.position.y = 1.65;
+    mesh.children[0].castShadow = true;
+
+    this.threeRenderer.setPosition(mesh, x, y);
+    this.threeRenderer.addToScene(mesh);
+
+    this.meshes[asset.id] = mesh;
   }
 
   bind(bus) {
@@ -302,7 +318,7 @@ class _ThreeRenderer {
 
   createMap(width, height) {
     const geometry = new THREE.PlaneGeometry(width * SIZE, height * SIZE, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0x4bd629, side: THREE.DoubleSide });
+    const material = new THREE.MeshStandardMaterial({ color: 0x47a91f, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotateX(-Math.PI / 2);
     plane.receiveShadow = true;

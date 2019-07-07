@@ -25,7 +25,7 @@ class Controller {
     this.wallRenderer = new WallRenderer(this.threeRenderer);
     this.laserRenderer = new LaserRenderer(this.threeRenderer);
     this.tankRenderer = new TankRenderer(this.threeRenderer, this.modelLoader.tankModel);
-    this.treeRenderer = new TreeRenderer(this.threeRenderer);
+    this.treeRenderer = new TreeRenderer(this.threeRenderer, this.modelLoader.treeModel);
 
     this.bindRenderers();
 
