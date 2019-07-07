@@ -145,7 +145,7 @@ class _TreeRenderer extends _BaseRenderer {
 
     const mesh = this.treeMesh.clone();
     mesh.position.y = 1.65;
-    mesh.children[0].castShadow = true;
+    mesh.castShadow = true;
 
     this.threeRenderer.setPosition(mesh, x, y);
     this.threeRenderer.addToScene(mesh);
