@@ -50,6 +50,7 @@ class _BaseRenderer {
       y,
       this.zPosition,
     );
+    mesh.castShadow = true;
     this.threeRenderer.addToScene(mesh);
 
     this.meshes[asset.id] = mesh;
@@ -168,6 +169,7 @@ class _TankRenderer extends _BaseRenderer {
 
     const mesh = this.tankMesh.clone();
     mesh.position.y = 2;
+    mesh.children[0].castShadow = true;
 
     this.threeRenderer.setPosition(mesh, x, y);
     this.threeRenderer.setRotation(mesh, asset.orientation);
@@ -270,19 +272,45 @@ class _ThreeRenderer {
   }
 
   addLighting() {
-    const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+    var ambientLight = new THREE.AmbientLight( 0x330000 );
+    this.scene.add( ambientLight );
+
+    const hemisphere = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9);
     this.scene.add(hemisphere);
 
-    const sun = new THREE.PointLight(0xffffff, 0.8);
-    sun.position.set(0, 50, 50);
-    this.scene.add(sun);
+    var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    dirLight.color.setHSL( 0.1, 1, 0.95 );
+    dirLight.position.set( -10, 10.75, 10 );
+    dirLight.position.multiplyScalar( 10 );
+    this.scene.add( dirLight );
+
+    dirLight.castShadow = true;
+
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+
+    var d = 150;
+
+    dirLight.shadow.camera.left = -d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = -d;
+
+    dirLight.shadow.camera.far = 3500;
+    dirLight.shadow.bias = -0.0001;
+
+    var helper = new THREE.DirectionalLightHelper( dirLight, 5 );
+    this.scene.add(helper);
+
+    window.dirLight = dirLight;
   }
 
   createMap(width, height) {
     const geometry = new THREE.PlaneGeometry(width * SIZE, height * SIZE, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    const material = new THREE.MeshStandardMaterial({ color: 0x4bd629, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotateX(-Math.PI / 2);
+    plane.receiveShadow = true;
 
     this.scene.add(plane);
   }
