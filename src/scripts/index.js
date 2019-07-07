@@ -4,29 +4,35 @@ const TreeRenderer = window.TreeRenderer;
 const LaserRenderer = window.LaserRenderer;
 const WallRenderer = window.WallRenderer;
 const TankRenderer = window.TankRenderer;
+const ModelLoader = window.ModelLoader;
 const WorldStateManager = window.WorldStateManager;
+
 
 class Controller {
   constructor() {
     this.threeRenderer = new ThreeRenderer(document.querySelector('.grid'));
     this.playerRenderer = new PlayerListRenderer(document.querySelector('.player-list'));
     this.worldStateManager = new WorldStateManager();
-    this._interval = setInterval(() => this.tick(), 100);
+    this.modelLoader = new ModelLoader();
   }
 
   async initialize() {
     const data = await this.fetchWorld();
     this.threeRenderer.initialize(data);
 
+    await this.modelLoader.load();
+
     this.wallRenderer = new WallRenderer(this.threeRenderer);
     this.laserRenderer = new LaserRenderer(this.threeRenderer);
-    this.tankRenderer = new TankRenderer(this.threeRenderer);
+    this.tankRenderer = new TankRenderer(this.threeRenderer, this.modelLoader.tankModel);
     this.treeRenderer = new TreeRenderer(this.threeRenderer);
 
     this.bindRenderers();
 
     this.worldStateManager.initialize(data);
     this.updateViews(data);
+
+    this._interval = setInterval(() => this.tick(), 100);
   }
 
   bindRenderers() {

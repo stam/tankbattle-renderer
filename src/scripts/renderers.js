@@ -144,12 +144,10 @@ class _TreeRenderer extends _BaseRenderer {
 }
 
 class _TankRenderer extends _BaseRenderer {
-  constructor(...args) {
-    super(...args);
+  constructor(renderer, tankMesh) {
+    super(renderer);
 
-    this.hullGeometry = new THREE.BoxGeometry(2.5, 1.5, 2);
-    this.turretGeometry = new THREE.BoxGeometry(1.5, 1, 1.5);
-    this.barrelGeometry = new THREE.BoxGeometry(2.5, 0.5, 0.5);
+    this.tankMesh = tankMesh;
   }
 
   update(tankEvent) {
@@ -167,29 +165,15 @@ class _TankRenderer extends _BaseRenderer {
     const { detail: asset } = assetEvent;
     const [x, y] = asset.position;
 
-    const group = new THREE.Group();
 
-    const playerMaterial = new THREE.MeshStandardMaterial();
-    playerMaterial.color = new THREE.Color(asset.color);
+    const mesh = this.tankMesh.clone();
+    mesh.position.y = 2;
 
-    const hull = new THREE.Mesh(this.hullGeometry, playerMaterial);
-    hull.position.y = 0.75;
-    group.add(hull);
+    this.threeRenderer.setPosition(mesh, x, y);
+    this.threeRenderer.setRotation(mesh, asset.orientation);
+    this.threeRenderer.addToScene(mesh);
 
-    const turret = new THREE.Mesh(this.turretGeometry, playerMaterial);
-    turret.position.y = 1.5 + 0.5;
-    group.add(turret);
-
-    const barrel = new THREE.Mesh(this.barrelGeometry, playerMaterial);
-    barrel.position.y = 1.5 + 0.5;
-    barrel.position.x = -1.25;
-    group.add(barrel);
-
-    this.threeRenderer.setPosition(group, x, y);
-    this.threeRenderer.setRotation(group, asset.orientation);
-    this.threeRenderer.addToScene(group);
-
-    this.meshes[asset.id] = group;
+    this.meshes[asset.id] = mesh;
   }
 
   bind(bus) {
@@ -241,6 +225,7 @@ class _ThreeRenderer {
     this.camera.lookAt(this.scene.position);
 
     this.renderer = new THREE.WebGLRenderer();
+    this.renderer.shadowMap.enabled = true;
     this.renderer.setClearColor(0xffffff, 1);
     this.renderer.setSize(width, height);
     this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
