@@ -171,7 +171,8 @@ class _TankRenderer extends _BaseRenderer {
     const [x, y] = tank.position;
     const mesh = this.meshes[tank.id];
     this.threeRenderer.setPosition(mesh, x, y);
-    this.threeRenderer.setRotation(mesh, tank.orientation);
+
+    this.threeRenderer.tweenRotation(mesh, tank.orientation);
 
     return mesh;
   }
@@ -221,6 +222,8 @@ class _TankRenderer extends _BaseRenderer {
     this.threeRenderer.setPosition(mesh, x, y);
     this.threeRenderer.setRotation(mesh, asset.orientation);
     this.threeRenderer.addToScene(mesh);
+
+    window.tank = mesh;
 
     this.meshes[asset.id] = mesh;
   }
@@ -297,6 +300,32 @@ class _ThreeRenderer {
 
     mesh.position.x = worldX;
     mesh.position.z = worldZ;
+  }
+
+  tweenRotation(mesh, orientation) {
+    let rotation;
+
+    switch (orientation) {
+      case 'north':
+        rotation = 0;
+        break;
+      case 'east':
+        rotation = -0.5 * Math.PI;
+        break;
+      case 'south':
+        rotation = Math.PI;
+        break;
+      case 'west':
+        rotation = 0.5 * Math.PI;
+        break;
+    }
+    console.log('tweenRotation', mesh.rotation.y, rotation);
+
+    // mesh.rotation.y = 0;
+    // window.tank = mesh;
+    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}};
+    // const t = new window.TweenMax.to(mesh.rotation, 1, { y: rotation });
+    const t = new window.TweenMax.to(mesh.rotation, 1, tween);
   }
 
   setRotation(mesh, orientation) {
