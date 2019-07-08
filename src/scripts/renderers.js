@@ -167,6 +167,7 @@ class _TankRenderer extends _BaseRenderer {
   }
 
   update(tankEvent) {
+    console.log('update tank');
     const { detail: tank } = tankEvent;
     const [x, y] = tank.position;
     const mesh = this.meshes[tank.id];
@@ -308,11 +309,11 @@ class _ThreeRenderer {
     // mesh.position.x = worldX;
     // mesh.position.z = worldZ;
 
-    const t = new window.TweenMax.to(mesh.position, 0.1, {
+    const t = new window.TweenMax.to(mesh.position, 0.5, {
       x: worldX,
       z: worldZ,
-      // delay: 0.025,
-      ease: window.Power2.easeInOut
+      delay: 0.5,
+      ease: window.Power1.easeInOut
     });
   }
 
@@ -337,9 +338,9 @@ class _ThreeRenderer {
 
     // mesh.rotation.y = 0;
     // window.tank = mesh;
-    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}, ease: window.Power2.easeInOut};
+    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}, ease: window.Power1.easeInOut};
     // const t = new window.TweenMax.to(mesh.rotation, 1, { y: rotation });
-    const t = new window.TweenMax.to(mesh.rotation, 0.1, tween);
+    const t = new window.TweenMax.to(mesh.rotation, 0.5, tween);
   }
 
   setRotation(mesh, orientation) {

@@ -68,14 +68,19 @@ class _WorldStateManager {
       }
     });
 
-    newStateArray.forEach(updatedAssset => {
-      if (oldStateDict[updatedAssset.id] === undefined) {
-        oldStateDict[updatedAssset.id] = updatedAssset;
-
-        this.bus.dispatchEvent(`${eventPrefix}_CREATE`, updatedAssset);
+    newStateArray.forEach(updatedAsset => {
+      const oldState = oldStateDict[updatedAsset.id];
+      if (oldState === undefined) {
+        oldStateDict[updatedAsset.id] = updatedAsset;
+        
+        this.bus.dispatchEvent(`${eventPrefix}_CREATE`, updatedAsset);
         return;
       }
-      this.bus.dispatchEvent(`${eventPrefix}_UPDATE`, updatedAssset);
+      oldStateDict[updatedAsset.id] = updatedAsset;
+
+      if (oldState.position[0] !== updatedAsset.position[0] || oldState.position[1] !== updatedAsset.position[1]) {
+        this.bus.dispatchEvent(`${eventPrefix}_UPDATE`, updatedAsset);
+      }
     });
   }
 }
