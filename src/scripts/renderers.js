@@ -170,9 +170,9 @@ class _TankRenderer extends _BaseRenderer {
     const { detail: tank } = tankEvent;
     const [x, y] = tank.position;
     const mesh = this.meshes[tank.id];
-    this.threeRenderer.setPosition(mesh, x, y);
-
+    
     this.threeRenderer.tweenRotation(mesh, tank.orientation);
+    this.threeRenderer.tweenPosition(mesh, x, y);
 
     return mesh;
   }
@@ -302,6 +302,20 @@ class _ThreeRenderer {
     mesh.position.z = worldZ;
   }
 
+  tweenPosition(mesh, x, y) {
+    const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
+
+    // mesh.position.x = worldX;
+    // mesh.position.z = worldZ;
+
+    const t = new window.TweenMax.to(mesh.position, 0.1, {
+      x: worldX,
+      z: worldZ,
+      // delay: 0.025,
+      ease: window.Power2.easeInOut
+    });
+  }
+
   tweenRotation(mesh, orientation) {
     let rotation;
 
@@ -319,13 +333,13 @@ class _ThreeRenderer {
         rotation = 0.5 * Math.PI;
         break;
     }
-    console.log('tweenRotation', mesh.rotation.y, rotation);
+    // console.log('tweenRotation', mesh.rotation.y, rotation);
 
     // mesh.rotation.y = 0;
     // window.tank = mesh;
-    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}};
+    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}, ease: window.Power2.easeInOut};
     // const t = new window.TweenMax.to(mesh.rotation, 1, { y: rotation });
-    const t = new window.TweenMax.to(mesh.rotation, 1, tween);
+    const t = new window.TweenMax.to(mesh.rotation, 0.1, tween);
   }
 
   setRotation(mesh, orientation) {
