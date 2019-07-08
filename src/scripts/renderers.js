@@ -70,9 +70,9 @@ class _LaserRenderer extends _BaseRenderer {
   constructor(...args) {
     super(...args);
 
-    this.zPosition = 2;
-    this.geometry = new THREE.BoxGeometry(1.25, 0.5, 0.5);
-    this.material = new THREE.MeshNormalMaterial();
+    this.zPosition = 1.4;
+    this.geometry = new THREE.BoxGeometry(3, 0.2, 0.2);
+    this.material = new THREE.MeshBasicMaterial({ color: 0xff69b4 });
   }
 
   bind(bus) {
@@ -82,7 +82,6 @@ class _LaserRenderer extends _BaseRenderer {
 
   create(assetEvent) {
     const { detail: laser } = assetEvent;
-
     const group = new THREE.Group();
 
     const [xStart, yStart] = laser.startPos;
@@ -95,6 +94,10 @@ class _LaserRenderer extends _BaseRenderer {
     );
     group.add(startMesh);
 
+    const light = new THREE.PointLight(0xff00f0, 5, 1000);
+    light.position.set(...Object.values(startMesh.position));
+    group.add(light);
+
     const [xEnd, yEnd] = laser.endPos;
     const endMesh = this.threeRenderer.createObjectAtPosition(
       this.geometry,
@@ -104,6 +107,27 @@ class _LaserRenderer extends _BaseRenderer {
       this.zPosition,
     );
     group.add(endMesh);
+
+
+    // Aninate a light along the laser direction, to make it looks like the laser actually shoots.
+    // TODO the away position should be startPosition + scalar * orientation,
+    // Because a laser can have the same start & endPos, and then this calculation doesn't make sense
+    let awayX = endMesh.position.x;
+    let awayZ = endMesh.position.z;
+    if (awayX === startMesh.position.x) {
+      awayZ += (awayZ - startMesh.position.z) * 10;
+    } else {
+      awayX += (awayX - startMesh.position.x) * 10;
+    }
+
+    window.TweenMax.to(light.position, 0.5, {
+      x: awayX,
+      z: awayZ,
+      ease: window.Power1.easeIn,
+      onComplete: () => {
+        light.intensity = 0;
+      },
+    });
 
     const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
     intermediatePositions.forEach(position => {

@@ -1,3 +1,5 @@
+const SCALE = 3 / 32;
+
 class Es6Loader {
   constructor() {
     this._loader = new window.THREE.GLTFLoader();
@@ -22,14 +24,14 @@ class _ModelLoader {
       
       // The exported model is wayyy too big and rotated west
       mesh.rotation.y = 0.5 * Math.PI;
-      mesh.scale.set(0.1, 0.1, 0.1);
+      mesh.scale.set(SCALE, SCALE, SCALE);
       group.add(mesh);
       return group;
     });
     this.treeModel = await this.es6Loader.load('assets/tree_01.gltf').then(gltf => {
       const mesh = gltf.scene.children[0];
       mesh.material.side = window.THREE.DoubleSide;      
-      mesh.scale.set(0.1, 0.1, 0.1);
+      mesh.scale.set(SCALE, SCALE, SCALE);
       return mesh;
     });
   }
