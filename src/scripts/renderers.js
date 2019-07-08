@@ -1,4 +1,5 @@
 const SIZE = 3;
+const TANK_MOVEMENT_SPEED = 0.5;
 const THREE = window.THREE;
 
 function getValuesBetween(start, end) {
@@ -176,14 +177,14 @@ class _TankRenderer extends _BaseRenderer {
 
     const timeline = new window.TimelineMax();
     timeline
-      .to(mesh.rotation, 0.5, {
+      .to(mesh.rotation, TANK_MOVEMENT_SPEED / 2, {
         directionalRotation: {
           y: `${targetRotation}_short`,
           useRadians: true,
         },
         ease: window.Power1.easeInOut,
       })
-      .to(mesh.position, 0.5, {
+      .to(mesh.position, TANK_MOVEMENT_SPEED / 2, {
         x: worldX,
         z: worldZ,
         ease: window.Power1.easeInOut,

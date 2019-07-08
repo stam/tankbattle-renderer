@@ -78,8 +78,10 @@ class _WorldStateManager {
       }
       oldStateDict[updatedAsset.id] = updatedAsset;
 
-      if (oldState.position[0] !== updatedAsset.position[0] || oldState.position[1] !== updatedAsset.position[1]) {
-        this.bus.dispatchEvent(`${eventPrefix}_UPDATE`, updatedAsset);
+      if (updatedAsset.position) {
+        if (oldState.position[0] !== updatedAsset.position[0] || oldState.position[1] !== updatedAsset.position[1]) {
+          this.bus.dispatchEvent(`${eventPrefix}_UPDATE`, updatedAsset);
+        }
       }
     });
   }
