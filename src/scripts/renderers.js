@@ -167,13 +167,27 @@ class _TankRenderer extends _BaseRenderer {
   }
 
   update(tankEvent) {
-    console.log('update tank');
     const { detail: tank } = tankEvent;
     const [x, y] = tank.position;
     const mesh = this.meshes[tank.id];
-    
-    this.threeRenderer.tweenRotation(mesh, tank.orientation);
-    this.threeRenderer.tweenPosition(mesh, x, y);
+
+    const targetRotation = this.threeRenderer.getYRotationFromOrientation(tank.orientation);
+    const [worldX, worldZ] = this.threeRenderer.convertFromGridToWorld(x, y);
+
+    const timeline = new window.TimelineMax();
+    timeline
+      .to(mesh.rotation, 0.5, {
+        directionalRotation: {
+          y: `${targetRotation}_short`,
+          useRadians: true,
+        },
+        ease: window.Power1.easeInOut,
+      })
+      .to(mesh.position, 0.5, {
+        x: worldX,
+        z: worldZ,
+        ease: window.Power1.easeInOut,
+      });
 
     return mesh;
   }
@@ -223,8 +237,6 @@ class _TankRenderer extends _BaseRenderer {
     this.threeRenderer.setPosition(mesh, x, y);
     this.threeRenderer.setRotation(mesh, asset.orientation);
     this.threeRenderer.addToScene(mesh);
-
-    window.tank = mesh;
 
     this.meshes[asset.id] = mesh;
   }
@@ -303,63 +315,24 @@ class _ThreeRenderer {
     mesh.position.z = worldZ;
   }
 
-  tweenPosition(mesh, x, y) {
-    const [worldX, worldZ] = this.convertFromGridToWorld(x, y);
-
-    // mesh.position.x = worldX;
-    // mesh.position.z = worldZ;
-
-    const t = new window.TweenMax.to(mesh.position, 0.5, {
-      x: worldX,
-      z: worldZ,
-      delay: 0.5,
-      ease: window.Power1.easeInOut
-    });
-  }
-
-  tweenRotation(mesh, orientation) {
-    let rotation;
-
+  getYRotationFromOrientation(orientation) {
     switch (orientation) {
       case 'north':
-        rotation = 0;
-        break;
+        return 0;
       case 'east':
-        rotation = -0.5 * Math.PI;
-        break;
+        return -0.5 * Math.PI;
       case 'south':
-        rotation = Math.PI;
-        break;
+        return Math.PI;
       case 'west':
-        rotation = 0.5 * Math.PI;
-        break;
-    }
-    // console.log('tweenRotation', mesh.rotation.y, rotation);
-
-    // mesh.rotation.y = 0;
-    // window.tank = mesh;
-    const tween = {directionalRotation:{y:`${rotation}_short`, useRadians: true}, ease: window.Power1.easeInOut};
-    // const t = new window.TweenMax.to(mesh.rotation, 1, { y: rotation });
-    const t = new window.TweenMax.to(mesh.rotation, 0.5, tween);
-  }
-
-  setRotation(mesh, orientation) {
-    switch (orientation) {
-      case 'north':
-        mesh.rotation.y = 0;
-        return;
-      case 'east':
-        mesh.rotation.y = -0.5 * Math.PI;
-        return;
-      case 'south':
-        mesh.rotation.y = Math.PI;
-        return;
-      case 'west':
-        mesh.rotation.y = 0.5 * Math.PI;
-        return;
+        return 0.5 * Math.PI;
       default:
         throw new Error(`Unsupported orientation found: ${orientation}`);
     }
+  }
+
+  setRotation(mesh, orientation) {
+    const rotation = this.getYRotationFromOrientation(orientation);
+    mesh.rotation.y = rotation;
   }
 
   addLighting() {
