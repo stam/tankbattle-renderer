@@ -24,7 +24,7 @@ class Controller {
 
     this.wallRenderer = new WallRenderer(this.threeRenderer);
     this.laserRenderer = new LaserRenderer(this.threeRenderer);
-    this.tankRenderer = new TankRenderer(this.threeRenderer, this.modelLoader.tankModel);
+    this.tankRenderer = new TankRenderer(this.threeRenderer, this.modelLoader.tankModels);
     this.treeRenderer = new TreeRenderer(this.threeRenderer, this.modelLoader.treeModel);
 
     this.bindRenderers();
@@ -44,10 +44,9 @@ class Controller {
 
 
   async fetchWorld() {
-    return window._world;
-    // const response = await fetch('/world');
-    // const data = await response.json();
-    // return data;
+    const response = await fetch('/world');
+    const data = await response.json();
+    return data;
   }
 
   async tick() {

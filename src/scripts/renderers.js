@@ -185,10 +185,10 @@ class _TreeRenderer extends _BaseRenderer {
 }
 
 class _TankRenderer extends _BaseRenderer {
-  constructor(renderer, tankMesh) {
+  constructor(renderer, tankMeshes) {
     super(renderer);
 
-    this.tankMesh = tankMesh;
+    this.tankMeshes = tankMeshes;
   }
 
   update(tankEvent) {
@@ -253,8 +253,7 @@ class _TankRenderer extends _BaseRenderer {
     const [x, y] = asset.position;
 
     const sprite = this.createPlayerLabel(asset.color, asset.name);
-
-    const mesh = this.tankMesh.clone();
+    const mesh = this.tankMeshes[asset.color].clone();
     mesh.add(sprite);
     mesh.position.y = 1.65;
     mesh.children[0].castShadow = true;

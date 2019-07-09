@@ -18,9 +18,9 @@ class _ModelLoader {
   }
   async load() {
     this.colors = ['blue', 'purple', 'red', 'yellow']
-    this.tankModel = []
-    this.colors.map(async color => {
-      this.tankModel[color] = await this.es6Loader.load(`assets/tank_${color}.gltf`).then(gltf => {
+    this.tankModels = {}
+    const promises = this.colors.map(async color => {
+      this.tankModels[color] = await this.es6Loader.load(`assets/tank_${color}.gltf`).then(gltf => {
         const mesh = gltf.scene.children[0];
         const group = new window.THREE.Group();
         mesh.material.side = window.THREE.DoubleSide;
@@ -32,6 +32,7 @@ class _ModelLoader {
         return group;
       }); 
     });
+    await Promise.all(promises);
     this.treeModel = await this.es6Loader.load('assets/tree_01.gltf').then(gltf => {
       const mesh = gltf.scene.children[0];
       mesh.material.side = window.THREE.DoubleSide;      
