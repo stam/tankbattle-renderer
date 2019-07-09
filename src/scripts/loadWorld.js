@@ -18,7 +18,7 @@ window._world = {
       position: [7, 1],
       energy: 3,
       reloaded: null,
-      color: 'hotpink',
+      color: 'pink',
       name: '🤖 ROB',
       'last-move': null,
       'last-shot': 1562420953331,
