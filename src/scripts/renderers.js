@@ -94,10 +94,6 @@ class _LaserRenderer extends _BaseRenderer {
     );
     group.add(startMesh);
 
-    const light = new THREE.PointLight(0xff00f0, 5, 1000);
-    light.position.set(...Object.values(startMesh.position));
-    group.add(light);
-
     const [xEnd, yEnd] = laser.endPos;
     const endMesh = this.threeRenderer.createObjectAtPosition(
       this.geometry,
@@ -107,27 +103,6 @@ class _LaserRenderer extends _BaseRenderer {
       this.zPosition,
     );
     group.add(endMesh);
-
-
-    // Aninate a light along the laser direction, to make it looks like the laser actually shoots.
-    // TODO the away position should be startPosition + scalar * orientation,
-    // Because a laser can have the same start & endPos, and then this calculation doesn't make sense
-    let awayX = endMesh.position.x;
-    let awayZ = endMesh.position.z;
-    if (awayX === startMesh.position.x) {
-      awayZ += (awayZ - startMesh.position.z) * 10;
-    } else {
-      awayX += (awayX - startMesh.position.x) * 10;
-    }
-
-    window.TweenMax.to(light.position, 0.5, {
-      x: awayX,
-      z: awayZ,
-      ease: window.Power1.easeIn,
-      onComplete: () => {
-        light.intensity = 0;
-      },
-    });
 
     const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
     intermediatePositions.forEach(position => {
@@ -376,7 +351,7 @@ class _ThreeRenderer {
     dirLight.shadow.mapSize.width = 512;
     dirLight.shadow.mapSize.height = 512;
 
-    const d = 20;
+    const d = 25;
     dirLight.shadow.camera.left = -d;
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;

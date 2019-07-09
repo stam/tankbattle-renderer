@@ -45,8 +45,7 @@ class Controller {
 
   async fetchWorld() {
     const response = await fetch('/world');
-    const data = await response.json();
-    return data;
+    return response.json();
   }
 
   async tick() {
