@@ -37,8 +37,7 @@ class _WorldStateManager {
   }
 
   parseStatics(initialWorld) {
-    initialWorld.staticObjects
-      .filter(object => object.type === 'wall')
+    initialWorld.walls
       .forEach(wall => {
         this.walls[wall.id] = wall;
         this.bus.dispatchEvent('WALL_CREATE', wall);
@@ -48,8 +47,7 @@ class _WorldStateManager {
   parse(worldData) {
     this.diff(this.tanks, worldData.tanks, 'TANK');
 
-    const newTrees = worldData.staticObjects.filter(obj => obj.type === 'tree');
-    this.diff(this.trees, newTrees, 'TREE');
+    this.diff(this.trees, worldData.trees, 'TREE');
     this.diff(this.lasers, worldData.lasers, 'LASER');
   }
 
