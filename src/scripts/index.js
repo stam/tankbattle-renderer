@@ -32,7 +32,7 @@ class Controller {
     this.worldStateManager.initialize(data);
     this.updateViews(data);
 
-    this._interval = setInterval(() => this.tick(), 100);
+    this._interval = setInterval(() => this.tick(), 500);
   }
 
   bindRenderers() {
