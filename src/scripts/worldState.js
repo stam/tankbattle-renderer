@@ -39,7 +39,7 @@ class _WorldStateManager {
   parseStatics(initialWorld) {
     initialWorld.walls
       .forEach(wall => {
-        this.walls[wall.id] = wall;
+        this.walls[wall.uuid] = wall;
         this.bus.dispatchEvent('WALL_CREATE', wall);
       });
   }
@@ -52,13 +52,13 @@ class _WorldStateManager {
   }
 
   diff(oldStateDict, newStateArray, eventPrefix) {
-    const newIds = newStateArray.map(t => t.id);
+    const newIds = newStateArray.map(t => t.uuid);
     const existingAssets = Object.values(oldStateDict);
 
     // Find which tanks are deleted:
     // Existed in previous state but are not in current state
     existingAssets.forEach((existingAsset) => {
-      const id = existingAsset.id;
+      const id = existingAsset.uuid;
 
       if (!newIds.includes(id)) {
         this.bus.dispatchEvent(`${eventPrefix}_DELETE`, oldStateDict[id]);
@@ -67,14 +67,14 @@ class _WorldStateManager {
     });
 
     newStateArray.forEach(updatedAsset => {
-      const oldState = oldStateDict[updatedAsset.id];
+      const oldState = oldStateDict[updatedAsset.uuid];
       if (oldState === undefined) {
-        oldStateDict[updatedAsset.id] = updatedAsset;
+        oldStateDict[updatedAsset.uuid] = updatedAsset;
         
         this.bus.dispatchEvent(`${eventPrefix}_CREATE`, updatedAsset);
         return;
       }
-      oldStateDict[updatedAsset.id] = updatedAsset;
+      oldStateDict[updatedAsset.uuid] = updatedAsset;
 
       if (updatedAsset.position) {
         if (oldState.position[0] !== updatedAsset.position[0] || oldState.position[1] !== updatedAsset.position[1]) {

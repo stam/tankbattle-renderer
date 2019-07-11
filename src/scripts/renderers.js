@@ -54,15 +54,15 @@ class _BaseRenderer {
     mesh.castShadow = true;
     this.threeRenderer.addToScene(mesh);
 
-    this.meshes[asset.id] = mesh;
+    this.meshes[asset.uuid] = mesh;
   }
 
   delete(assetEvent) {
     const { detail: asset } = assetEvent;
 
-    const mesh = this.meshes[asset.id];
+    const mesh = this.meshes[asset.uuid];
     this.threeRenderer.removeFromScene(mesh);
-    delete this.meshes[asset.id];
+    delete this.meshes[asset.uuid];
   }
 }
 
@@ -123,7 +123,7 @@ class _LaserRenderer extends _BaseRenderer {
     }
 
     this.threeRenderer.addToScene(group);
-    this.meshes[laser.id] = group;
+    this.meshes[laser.uuid] = group;
   }
 }
 
@@ -149,7 +149,7 @@ class _TreeRenderer extends _BaseRenderer {
     this.threeRenderer.setPosition(mesh, x, y);
     this.threeRenderer.addToScene(mesh);
 
-    this.meshes[asset.id] = mesh;
+    this.meshes[asset.uuid] = mesh;
   }
 
   bind(bus) {
@@ -169,7 +169,7 @@ class _TankRenderer extends _BaseRenderer {
   update(tankEvent) {
     const { detail: tank } = tankEvent;
     const [x, y] = tank.position;
-    const mesh = this.meshes[tank.id];
+    const mesh = this.meshes[tank.uuid];
 
     const targetRotation = this.threeRenderer.getYRotationFromOrientation(tank.orientation);
     const [worldX, worldZ] = this.threeRenderer.convertFromGridToWorld(x, y);
@@ -237,7 +237,7 @@ class _TankRenderer extends _BaseRenderer {
     this.threeRenderer.setRotation(mesh, asset.orientation);
     this.threeRenderer.addToScene(mesh);
 
-    this.meshes[asset.id] = mesh;
+    this.meshes[asset.uuid] = mesh;
   }
 
   bind(bus) {
