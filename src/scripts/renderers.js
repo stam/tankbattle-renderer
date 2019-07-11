@@ -84,7 +84,7 @@ class _LaserRenderer extends _BaseRenderer {
     const { detail: laser } = assetEvent;
     const group = new THREE.Group();
 
-    const [xStart, yStart] = laser.startPos;
+    const [xStart, yStart] = laser['start-position'];
     const startMesh = this.threeRenderer.createObjectAtPosition(
       this.geometry,
       this.material,
@@ -94,7 +94,7 @@ class _LaserRenderer extends _BaseRenderer {
     );
     group.add(startMesh);
 
-    const [xEnd, yEnd] = laser.endPos;
+    const [xEnd, yEnd] = laser['end-position'];
     const endMesh = this.threeRenderer.createObjectAtPosition(
       this.geometry,
       this.material,
@@ -104,7 +104,7 @@ class _LaserRenderer extends _BaseRenderer {
     );
     group.add(endMesh);
 
-    const intermediatePositions = getIntermediatePositions(laser.startPos, laser.endPos);
+    const intermediatePositions = getIntermediatePositions(laser['start-position'], laser['end-position']);
     intermediatePositions.forEach(position => {
       const intermediateMesh = this.threeRenderer.createObjectAtPosition(
         this.geometry,
